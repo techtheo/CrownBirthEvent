@@ -58,7 +58,7 @@
         <div class="container position-relative" data-aos="fade-up">
           <div class="row">
             <div class="col-lg-6">
-              <h2>About The Event Centre</h2>
+              <h2>About Event Centre</h2>
               <p>Sed nam ut dolor qui repellendus iusto odit. Possimus inventore eveniet accusamus error amet eius aut
                 accusantium et. Non odit consequatur repudiandae sequi ea odio molestiae. Enim possimus sunt inventore in
                 est ut optio sequi unde.</p>
