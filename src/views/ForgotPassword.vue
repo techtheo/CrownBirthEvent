@@ -1,13 +1,15 @@
 <script setup>
 import { ref } from 'vue'
-// import { resetPassword } from '../services/authService'
+import { triggerResetEmail } from '../services/authService'
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
+import { useRouter } from 'vue-router'
 
 const email = ref('')
 const emailError = ref('')
 const loading = ref(false)
 const $toast = useToast()
+const router = useRouter()
 
 const validateEmail = (email) => {
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -22,9 +24,12 @@ const sendResetLink = async () => {
     }
     emailError.value = ''
     loading.value = true
-    // await resetPassword(email.value)
+    await triggerResetEmail(email.value)
     email.value = ''
-    $toast.success('Password reset link sent! Check your email.')
+    $toast.success('Password reset link sent! Check your email. Redirecting...')
+    setTimeout(() => {
+      router.push('/login')
+    }, 2000)
   } catch (error) {
     $toast.error('Failed to send reset link. Please try again.')
   } finally {

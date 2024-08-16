@@ -4,6 +4,7 @@ import { registerUser, signInWithGoogle } from '../services/authService'
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import { useRouter } from 'vue-router'
+import NavBar from '@/components/NavBar.vue'
 
 const email = ref('')
 const password = ref('')
@@ -53,12 +54,12 @@ const register = async () => {
 const signInWithGoogleHandler = async () => {
   try {
     loading.value = true
-    const { errorMessage } = await signInWithGoogle() // user credential destructuring user, token, errorMessage
+    const { errorMessage, user, role } = await signInWithGoogle() // user credential destructuring user, token, errorMessage
     if (errorMessage) {
       throw new Error(errorMessage)
     }
 
-    // localStorage.setItem('user', JSON.stringify(user))
+    localStorage.setItem('user', JSON.stringify(user))
     // localStorage.setItem('token', token)
 
     // You can store the user and token in your state management or local storage
@@ -67,7 +68,11 @@ const signInWithGoogleHandler = async () => {
 
     $toast.success('Login successful! Redirecting to dashboard...')
     setTimeout(() => {
-      router.push('/dashboard')
+      if (role === 'admin') {
+        router.push('/admin/dashboard')
+      } else {
+        router.push('/dashboard')
+      }
     }, 2000)
   } catch (error) {
     errorMessage.value = error.message
@@ -81,6 +86,7 @@ const signInWithGoogleHandler = async () => {
 </script>
 
 <template>
+  <NavBar />
   <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
     <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
       <h1 class="text-2xl font-bold text-center text-gray-900">Register</h1>
@@ -105,21 +111,14 @@ const signInWithGoogleHandler = async () => {
           class="w-full px-4 py-2 font-bold text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center"
           :disabled="loading"
         >
-          Register
-          <v-progress-circular
-            v-if="loading"
-            color="primary"
-            indeterminate
-            class="ml-2"
-            size="24"
-          ></v-progress-circular>
+          <div class="flex items-center">
+            {{ loading ? 'Signing Up...' : 'Register' }}
+            <span v-if="loading" class="animate-spin ml-2">⏳</span>
+          </div>
         </button>
       </form>
       <p v-if="errorMessage" class="text-red-500">{{ errorMessage }}</p>
-      <div class="text-center">
-        <p>Already have an account?</p>
-        <router-link to="/login" class="text-blue-500 hover:underline"> LogIn </router-link>
-      </div>
+
       <div class="text-center mt-4">
         <button
           @click="signInWithGoogleHandler"
@@ -127,14 +126,12 @@ const signInWithGoogleHandler = async () => {
           :disabled="loading"
         >
           Sign in with Google
-          <v-progress-circular
-            v-if="loading"
-            color="primary"
-            indeterminate
-            class="ml-2"
-            size="24"
-          ></v-progress-circular>
+          <span v-if="loading" class="animate-spin ml-2">⏳</span>
         </button>
+      </div>
+      <div class="flex justify-center gap-1">
+        <p>Already have an account?</p>
+        <router-link to="/login" class="text-blue-500 hover:underline"> LogIn </router-link>
       </div>
     </div>
   </div>

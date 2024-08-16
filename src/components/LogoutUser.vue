@@ -12,7 +12,7 @@ const signOut = async () => {
     await logoutUser()
     $toast.success('Successfully logged out!')
     setTimeout(() => {
-      router.push('/')
+      router.push('/login')
     }, 2000) // Wait for 2 seconds before navigating to the login page
   } catch (error) {
     $toast.error('Logout failed. Please try again.')
@@ -23,7 +23,7 @@ const signOut = async () => {
 <template>
   <button
     @click="signOut"
-    class="px-4 py-2 font-bold text-white bg-red-500 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+    class="px-2 py-1 font-bold text-sm text-white bg-red-500 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
   >
     Sign Out
   </button>

@@ -4,6 +4,9 @@ import { loginUser } from '../services/authService'
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import { useRouter } from 'vue-router'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons'
+import NavBar from '@/components/NavBar.vue'
 
 const email = ref('')
 const password = ref('')
@@ -22,12 +25,16 @@ const login = async () => {
   try {
     errorMessage.value = ''
     loading.value = true
-    await loginUser(email.value, password.value)
+    const { role } = await loginUser(email.value, password.value)
     clearField()
     $toast.success('Login successful! Redirecting to dashboard...')
     setTimeout(() => {
-      router.push('/dashboard')
-    }, 2000) // Wait for 2 seconds before navigating to the dashboard
+      if (role === 'admin') {
+        router.push('/admin/dashboard')
+      } else {
+        router.push('/dashboard')
+      }
+    }, 2000)
   } catch (error) {
     errorMessage.value = error.message
     // Clear the error message after 3 seconds
@@ -42,6 +49,7 @@ const login = async () => {
 </script>
 
 <template>
+  <NavBar />
   <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
     <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
       <h1 class="text-2xl font-bold text-center text-gray-900">Login</h1>
@@ -65,14 +73,10 @@ const login = async () => {
           class="w-full px-4 py-2 font-bold text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center"
           :disabled="loading"
         >
-          Login
-          <v-progress-circular
-            v-if="loading"
-            color="primary"
-            indeterminate
-            class="ml-2"
-            size="24"
-          ></v-progress-circular>
+          <div class="flex items-center">
+            {{ loading ? ' Logging In...' : 'Login' }}
+            <span v-if="loading" class="animate-spin ml-2">⏳</span>
+          </div>
         </button>
       </form>
       <p v-if="errorMessage" class="text-red-500">{{ errorMessage }}</p>
@@ -87,6 +91,12 @@ const login = async () => {
             Create account
           </router-link>
         </div>
+      </div>
+      <div class="flex justify-center items-center">
+        <router-link to="/" class="text-gray-500 hover:underline">
+          <FontAwesomeIcon :icon="faArrowLeft" />
+          <span class="ml-1">Back to home </span>
+        </router-link>
       </div>
     </div>
   </div>

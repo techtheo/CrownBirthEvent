@@ -17,7 +17,7 @@ const router = createRouter({
     },
     {
       path: '/login',
-      name: 'login',     
+      name: 'login',
       component: () => import('../views/LoginUser.vue')
     },
     {
@@ -25,10 +25,65 @@ const router = createRouter({
       name: 'forgot-password',
       component: () => import('../views/ForgotPassword.vue')
     },
+
+    // admin dashboard
+    {
+      path: '/admin/dashboard',
+      name: 'dashboard-admin',
+      component: () => import('../views/admin/DashboardAdmin.vue'),
+      children: [
+        {
+          path: 'create-event',
+          name: 'create-events',
+          component: () => import('../views/admin/CreateEvents.vue')
+        },
+        {
+          path: 'all-events',
+          name: 'all-events',
+          component: () => import('../views/admin/AllEvents.vue')
+        },
+        {
+          path: 'overview',
+          name: 'dashboard-overview',
+          // component: () => import('../views/Overview.vue')
+        },
+        {
+          path: 'campaign',
+          name: 'campaign',
+          // component: () => import('../views/AllCampaigns.vue')
+        }
+      ]
+    },
+
+
+    // user dashboard
     {
       path: '/dashboard',
-      name: 'dashboard',
-      component: () => import('../views/DashboardView.vue')
+      name: 'dashboard-user',
+      component: () => import('../views/user/DashboardUser.vue'),
+      children: [
+        {
+          path: 'create-event',
+          name: 'create-event',
+          component: () => import('../views/user/CreateEvent.vue')
+        },
+        {
+          path: 'event-bookings',
+          name: 'list-events',
+          component: () => import('../views/user/ListEvents.vue')
+
+        },
+        {
+          path: 'campaign',
+          name: 'campaign',
+          // component: () => import('../views/AllCampaigns.vue')
+        }
+      ]
+    },
+    {
+      path: '/events/:id',
+      name: 'EventDetails',
+      component: () => import ('../views/EventDetails.vue')
     }
   ]
 })
