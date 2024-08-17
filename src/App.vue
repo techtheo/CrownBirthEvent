@@ -1,9 +1,19 @@
-<script setup></script>
-
 <template>
-  <main>
-    <RouterView />
-  </main>
+  <div id="app">
+    <LandingPage></LandingPage>
+  </div>
 </template>
 
-<style scoped></style>
+<script>
+import LandingPage from './components/LandingPage.vue';
+
+export default {
+  components : {
+    LandingPage,
+  }
+}
+</script>
+
+<style>
+
+</style>
