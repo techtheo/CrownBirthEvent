@@ -1,8 +1,13 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import Login from '../components/auth/Login.vue'
-import SignUp from '../components/auth/SignUp.vue'
-import Dashboard from '../views/Dashboard/DashBoard.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import HomeView from '../views/HomeView.vue';
+import Login from '../components/auth/Login.vue';
+import SignUp from '../components/auth/SignUp.vue';
+import UserDashboard from '../views/UserDashboard.vue';
+import Dashboard from '../views/Dashboard.vue';
+import UserProfile from '../views/UserProfile.vue';
+import BookEvent from '../views/BookEvent.vue';
+import ViewBookedEvents from '../views/ViewBookedEvents.vue';
+import { getAuth, signOut } from 'firebase/auth'; // Import Firebase auth functions
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,23 +29,29 @@ const router = createRouter({
     },
     {
       path: '/user-dashboard',
-      name: 'dashboard',
-      component: Dashboard
+      component: UserDashboard,
+      children: [
+        { path: '', component: Dashboard },
+        { path: 'user-profile', component: UserProfile },
+        { path: 'book-event', component: BookEvent },
+        { path: 'view-booked-events', component: ViewBookedEvents },
+      ],
     },
     // {
-    //   path: '/admin-dashboard',
-    //   name: 'dashboard',
-    //   component: Dashboard
+    //   path: '/logout',
+    //   beforeEnter: async (to, from, next) => {
+    //     const auth = getAuth();
+    //     try {
+    //       await signOut(auth); // Firebase sign out
+    //       console.log('Logged out successfully');
+    //       next('/login'); // Redirect to login page after logout
+    //     } catch (error) {
+    //       console.error('Error during logout:', error.message);
+    //       next(false); // Prevent navigation if logout fails
+    //     }
+    //   },
     // },
-    {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue')
-    }
   ]
-})
+});
 
-export default router
+export default router;

@@ -4,6 +4,7 @@
       <img src="C:\Users\USER\OneDrive\Desktop\event3\CrownBirthEvent\src\assets\c logo.png" alt="Logo" class="logo" />
       <h1 class="title">Sign Up</h1>
     </div>
+    <input type="text" placeholder="Username" v-model="username" class="input-field" />
     <input type="email" placeholder="Email" v-model="email" class="input-field" />
     <div class="input-wrapper">
       <input
@@ -50,15 +51,16 @@
 </template>
 
 
+
 <script setup>
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../../../firebase'; // Import the Firestore instance
-// import { FaEye, FaEyeSlash } from '@vicons/fa'; // Import Vite icons
 
 const router = useRouter();
+const username = ref(''); // Add this line
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
@@ -77,7 +79,7 @@ const isPasswordValid = (password) => {
 };
 
 const isFormValid = computed(() => {
-  return email.value && isPasswordValid(password.value) && password.value === confirmPassword.value;
+  return username.value && email.value && isPasswordValid(password.value) && password.value === confirmPassword.value;
 });
 
 const togglePasswordVisibility = (field) => {
@@ -99,8 +101,9 @@ const signup = async () => {
     const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
     const user = userCredential.user;
 
-    // Save the user's role in Firestore
+    // Save the user's information in Firestore, including the username
     await setDoc(doc(db, 'users', user.uid), {
+      username: username.value, // Save the username
       email: email.value,
       role: 'user' // Default role; you can change this to 'admin' if needed
     });
@@ -116,6 +119,7 @@ const signup = async () => {
   }
 };
 </script>
+
 
 
 <style scoped>
