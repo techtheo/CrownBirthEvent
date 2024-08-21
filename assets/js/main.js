@@ -1,8 +1,8 @@
 (function() {
   "use strict";
 
-  /**
-   * Apply .scrolled class to the body as the page is scrolled down
+  /*
+    Apply .scrolled class to the body as the page is scrolled down
    */
   function toggleScrolled() {
     const selectBody = document.querySelector('body');
@@ -18,34 +18,41 @@
    * Mobile nav toggle
    */
   const mobileNavToggleBtn = document.querySelector('.mobile-nav-toggle');
+  const body = document.querySelector('body');
 
-  function mobileNavToogle() {
-    document.querySelector('body').classList.toggle('mobile-nav-active');
-    mobileNavToggleBtn.classList.toggle('bi-list');
-    mobileNavToggleBtn.classList.toggle('bi-x');
+  if (mobileNavToggleBtn) {
+    function mobileNavToogle() {
+      body.classList.toggle('mobile-nav-active');
+      mobileNavToggleBtn.classList.toggle('bi-list');
+      mobileNavToggleBtn.classList.toggle('bi-x');
+    }
+    mobileNavToggleBtn.addEventListener('click', mobileNavToogle);
   }
-  mobileNavToggleBtn.addEventListener('click', mobileNavToogle);
+  
 
   /**
    * Hide mobile nav on same-page/hash links
    */
   document.querySelectorAll('#navmenu a').forEach(navmenu => {
     navmenu.addEventListener('click', () => {
-      if (document.querySelector('.mobile-nav-active')) {
+      if (body.classList.contains('mobile-nav-active')) {
         mobileNavToogle();
       }
     });
-
   });
 
   /**
    * Toggle mobile nav dropdowns
    */
-  document.querySelectorAll('.navmenu .toggle-dropdown').forEach(navmenu => {
-    navmenu.addEventListener('click', function(e) {
+  document.querySelectorAll('.navmenu .toggle-dropdown').forEach(toggleDropdown => {
+    toggleDropdown.addEventListener('click', function(e) {
       e.preventDefault();
-      this.parentNode.classList.toggle('active');
-      this.parentNode.nextElementSibling.classList.toggle('dropdown-active');
+      const parentLi = this.closest('li');
+      parentLi.classList.toggle('active');
+      const dropdownMenu = parentLi.querySelector('ul');
+      if (dropdownMenu) {
+        dropdownMenu.classList.toggle('dropdown-active');
+      }
       e.stopImmediatePropagation();
     });
   });
@@ -70,13 +77,15 @@
       window.scrollY > 100 ? scrollTop.classList.add('active') : scrollTop.classList.remove('active');
     }
   }
-  scrollTop.addEventListener('click', (e) => {
-    e.preventDefault();
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
+  if (scrollTop) {
+    scrollTop.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
     });
-  });
+  }
 
   window.addEventListener('load', toggleScrollTop);
   document.addEventListener('scroll', toggleScrollTop);
@@ -109,7 +118,7 @@
       // Define Swiper configuration here
       let config = {
         loop: true,
-        speed: 600,
+        speed: 500,
         autoplay: {
           delay: 5000
         },
