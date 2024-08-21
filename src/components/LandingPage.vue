@@ -87,7 +87,7 @@ onMounted(() => {
           <li><router-link to="/contact">Contact</router-link></li>
         </ul>
         <!-- <i class="mobile-nav-close bi bi-x" @click="toggleMenu"></i> -->
-        <i :class="['mobile-nav-toggle', 'd-xl-none', isMenuOpen ? 'bi bi-x' : ' bi bi-x']" @click="toggleMenu"></i>
+        <i :class="['mobile-nav-toggle', 'd-xl-none', isMenuOpen ? 'bi bi-list' : ' bi bi-list']" @click="toggleMenu"></i>
       </nav>
 
       <router-link class="cta-btn d-none d-sm-block" to="/">Login/Register</router-link>
@@ -699,10 +699,10 @@ onMounted(() => {
   }
 }
 
-.bi-x {
+.bi-list {
   z-index: 1000;
   font-size: 90px;
-  color: green;
+  color: #F82249;
   position: relative;
   bottom: 15px;
 }
