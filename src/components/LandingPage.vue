@@ -712,9 +712,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 27px;
   cursor: pointer;
-  transition: color 0.3s;
 }
 
 /* Styling for dropdowns and active states */
