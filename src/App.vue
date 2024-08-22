@@ -1,17 +1,9 @@
 <template>
-  <div id="app">
-    <LandingPage></LandingPage>
-  </div>
+<RouterView />
 </template>
 
 <script>
-import LandingPage from './components/LandingPage.vue';
 
-export default {
-  components : {
-    LandingPage,
-  }
-}
 </script>
 
 <style>

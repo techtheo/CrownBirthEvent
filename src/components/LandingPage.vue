@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 
 const isMenuOpen = ref(false);
 const isDropdownOpen = ref(false);
@@ -46,10 +46,11 @@ onMounted(() => {
   <header id="header" class="header d-flex align-items-center fixed-top">
     <div class="container-fluid container-xl position-relative d-flex align-items-center">
 
-      <a href="index.html" class="logo d-flex align-items-center me-auto">
+      <router-link to="/" class="logo d-flex align-items-center me-auto">
         <!-- <img src="../../assets/img/logo.png" alt> -->
-        <h1 class="sitename">CrownBirth</h1>
-      </a>
+        <h1 class="sitename">CrownBirth</h1> 
+      </router-link>
+
       <nav id="navmenu" class="navmenu">
         <!-- Mobile menu close button -->
         <div class="mobile-nav-header" v-if="isMenuOpen">
@@ -99,7 +100,7 @@ onMounted(() => {
     <!-- Hero Section -->
     <section id="hero" class="hero section dark-background">
 
-      <img src="file:///C:/Users/user/Desktop/CrownBirthEvent/assets/img/hero-bg.jpg" alt="hero" data-aos="fade-in">
+      <img src="../../assets/img/hero-bg.jpg" alt="hero" data-aos="fade-in">
 
       <div class="container d-flex flex-column align-items-center text-center mt-auto">
         <h2 data-aos="fade-up" data-aos-delay="100" class="">CrownBIRTH<br><span>EVENT CENTRE</span></h2>
