@@ -59,31 +59,8 @@ onMounted(() => {
         <ul :class="{ active: isMenuOpen }">
           <li><router-link to="/hero" class="active">Home<br></router-link></li>
           <li><router-link to="/venue">Venue</router-link></li>
-          <!-- <li><router-link to="#gallery">Gallery</router-link></li> -->
-          <li class="dropdown">
-            <router-link to="/" @click="handleDropdownClick" :aria-expanded="isDropdownOpen.toString()">
-              <span>About Us</span>
-              <i class="bi bi-chevron-down toggle-dropdown"></i>
-            </router-link>
-            <ul v-show="isDropdownOpen" style="background: #042482; border-radius: 15px;">
-              <li><router-link style="color: #fff;" to="#">Dropdown 1</router-link></li>
-              <li class="dropdown">
-                <router-link style="color: #fff;" to="#" @click="handleDeepDropdownClick">
-                  <span>Deep Dropdown</span>
-                  <i class="bi bi-chevron-down toggle-dropdown"></i>
-                </router-link>
-                <ul v-show="isDeepDropdownOpen" style="background: #042482; border-radius: 15px; color: #fff;">
-                  <li><router-link to="#" style="color: #fff;">Deep Dropdown 1</router-link></li>
-                  <li><router-link to="#" style="color: #fff;">Deep Dropdown 2</router-link></li>
-                  <li><router-link to="#" style="color: #fff;">Deep Dropdown 3</router-link></li>
-                  <li><router-link to="#" style="color: #fff;">Deep Dropdown 4</router-link></li>
-                </ul>
-              </li>
-              <li><router-link to="#" style="color: #fff;">Dropdown 2</router-link></li>
-              <li><router-link to="#" style="color: #fff;">Dropdown 3</router-link></li>
-              <li><router-link to="#" style="color: #fff;">Dropdown 4</router-link></li>
-            </ul>
-          </li>
+          <!-- <li><router-link to="/gallery">Gallery</router-link></li> -->
+          <li><router-link to="/about">About Us</router-link></li>
           <li><router-link to="/booking">Booking</router-link></li>
           <li><router-link to="/contact">Contact</router-link></li>
         </ul>
@@ -674,10 +651,11 @@ onMounted(() => {
   .navmenu ul {
     display: none;
     position: fixed;
-    top: 0;
+    top: 10px;
+    padding-top:40px;
     left: 0;
     width: 100%;
-    height: 65%;
+    height: 50%;
     z-index: 1000;
     overflow-y: auto;
   }
@@ -704,8 +682,6 @@ onMounted(() => {
   z-index: 1000;
   font-size: 90px;
   color: #F82249;
-  position: relative;
-  bottom: 15px;
 }
 .mobile-nav-toggle {
   width: 30px;
@@ -715,12 +691,5 @@ onMounted(() => {
   justify-content: center;
   font-size: 27px;
   cursor: pointer;
-}
-
-/* Styling for dropdowns and active states */
-.navmenu .dropdown ul {
-  background: #fff;
-  border-radius: 15px;
-  color: #000;
 }
 </style>
