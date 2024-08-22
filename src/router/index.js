@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
-import Login from '../components/auth/Login.vue';
+import Login from '../components/auth/LogIn.vue';
 import SignUp from '../components/auth/SignUp.vue';
 import UserDashboard from '../views/UserDashboard.vue';
-import Dashboard from '../views/Dashboard.vue';
+import DashBoard from '../views/DashBoard.vue';
 import UserProfile from '../views/UserProfile.vue';
 import BookEvent from '../views/BookEvent.vue';
 import ViewBookedEvents from '../views/ViewBookedEvents.vue';
@@ -31,7 +31,7 @@ const router = createRouter({
       path: '/user-dashboard',
       component: UserDashboard,
       children: [
-        { path: '', component: Dashboard },
+        { path: '', component: DashBoard },
         { path: 'user-profile', component: UserProfile },
         { path: 'book-event', component: BookEvent },
         { path: 'view-booked-events', component: ViewBookedEvents },

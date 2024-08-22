@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/require-toggle-inside-transition -->
 <template>
     <div class="dashboard-layout">
       <!-- Hamburger Menu -->
@@ -10,7 +11,7 @@
         <aside class="sidebar" :class="{ open: isSidebarOpen }">
           <div class="sidebar-header">
             <!-- Logo Image -->
-            <img src="C:/Users/USER/OneDrive/Desktop/event3/CrownBirthEvent/src/assets/c logo.png" alt="Logo" class="sidebar-logo" />
+            <img src="../assets/c logo.png" alt="Logo" class="sidebar-logo" />
             <h2 class="sidebar-title">Event Center</h2>
           </div>
           <ul class="sidebar-menu">

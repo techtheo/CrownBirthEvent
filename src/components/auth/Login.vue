@@ -1,7 +1,7 @@
 <template class="body">
   <div class="login-container">
     <div class="logo-title-wrapper">
-      <img src="C:/Users/USER/OneDrive/Desktop/event3/CrownBirthEvent/src/assets/c logo.png" alt="C Logo" class="logo" />
+      <img src="../../assets/c logo.png" alt="C Logo" class="logo" />
       <h1 class="title">Login</h1>
     </div>
     <input id="email" type="email" placeholder="Email" v-model="email" class="input-field" />
@@ -46,7 +46,6 @@ const login = async () => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
     const user = userCredential.user;
-
     // Force token refresh to get updated claims
     const idTokenResult = await user.getIdTokenResult(true); 
     console.log('ID Token Claims:', idTokenResult.claims); // Debugging line

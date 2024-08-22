@@ -37,10 +37,6 @@ import { getFirestore, collection, getDocs, query, where } from 'firebase/firest
 import VueCal from 'vue-cal'; // Import VueCal
 import 'vue-cal/dist/vuecal.css'; // Import VueCal styles
 
-// Register VueCal component
-const components = {
-  VueCal
-};
 
 const formData = ref({
   venue: '',

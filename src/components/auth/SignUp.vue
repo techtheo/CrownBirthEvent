@@ -1,7 +1,7 @@
 <template>
   <div class="signup-container">
     <div class="logo-title-wrapper">
-      <img src="C:\Users\USER\OneDrive\Desktop\event3\CrownBirthEvent\src\assets\c logo.png" alt="Logo" class="logo" />
+      <img src="../../assets/c logo.png" alt="Logo" class="logo" />
       <h1 class="title">Sign Up</h1>
     </div>
     <input type="text" placeholder="Username" v-model="username" class="input-field" />
