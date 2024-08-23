@@ -655,7 +655,7 @@ onMounted(() => {
     padding-top:40px;
     left: 0;
     width: 100%;
-    height: 50%;
+    height: 80%;
     z-index: 1000;
     overflow-y: auto;
   }
