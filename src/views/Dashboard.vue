@@ -1,43 +1,81 @@
 <template>
-  <div class="dashboard-container">
+  <v-container class="dashboard-container" fluid>
     <!-- Welcome Message -->
-    <div class="welcome-message">
-      <h1 v-if="userName">Welcome, {{ userName }}!</h1>
-      <h1 v-else>Welcome to your Dashboard</h1>
-      <p>This is where you can see an overview of your account and upcoming events.</p>
-    </div>
+    <v-row>
+      <v-col>
+        <v-card class="welcome-card">
+          <v-card-title>
+            <v-typography variant="h1">
+              {{ userName ? `Welcome, ${userName}!` : 'Welcome to your Dashboard' }}
+            </v-typography>
+          </v-card-title>
+          <v-card-subtitle>
+            This is where you can see an overview of your account and upcoming events.
+          </v-card-subtitle>
+        </v-card>
+      </v-col>
+    </v-row>
 
     <!-- Upcoming Events Section -->
-    <section class="events-section">
-      <h2>Upcoming Events</h2>
-      <div class="event-cards">
-        <div v-for="event in upcomingEvents" :key="event.id" class="event-card">
-          <h3>{{ event.title }}</h3>
-          <p>{{ event.date }}</p>
-          <p>{{ event.description }}</p>
-        </div>
-      </div>
-    </section>
+    <v-row>
+      <v-col>
+        <v-card class="events-card">
+          <v-card-title>
+            <v-typography variant="h2">Upcoming Events</v-typography>
+          </v-card-title>
+          <v-card-text>
+            <v-row>
+              <v-col v-for="event in upcomingEvents" :key="event.id" cols="12" sm="6" md="4">
+                <v-card class="event-card" raised>
+                  <v-card-title>{{ event.title }}</v-card-title>
+                  <v-card-subtitle>{{ event.date }}</v-card-subtitle>
+                  <v-card-text>{{ event.description }}</v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
 
     <!-- Calendar View -->
-    <section class="calendar-section">
-      <h2>Calendar</h2>
-      <div class="calendar">
-        <!-- Placeholder for calendar component -->
-        <p>Calendar view will be here</p>
-      </div>
-    </section>
+    <v-row>
+      <v-col>
+        <v-card class="calendar-card">
+          <v-card-title>
+            <v-typography variant="h2">Calendar</v-typography>
+          </v-card-title>
+          <v-card-text>
+            <!-- Placeholder for calendar component -->
+            <p>Calendar view will be here</p>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
 
     <!-- Quick Overview of Booked Events -->
-    <section class="overview-section">
-      <h2>Quick Overview</h2>
-      <ul>
-        <li v-for="event in bookedEvents" :key="event.id">
-          <p>{{ event.title }} - {{ event.date }}</p>
-        </li>
-      </ul>
-    </section>
-  </div>
+    <v-row>
+      <v-col>
+        <v-card class="overview-card">
+          <v-card-title>
+            <v-typography variant="h2">Quick Overview</v-typography>
+          </v-card-title>
+          <v-card-text>
+            <v-list>
+              <v-list-item-group>
+                <v-list-item v-for="event in bookedEvents" :key="event.id">
+                  <v-list-item-content>
+                    <v-list-item-title>{{ event.title }}</v-list-item-title>
+                    <v-list-item-subtitle>{{ event.date }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-list-item-group>
+            </v-list>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script setup>
@@ -104,57 +142,44 @@ onMounted(() => {
   min-height: 100vh;
 }
 
-.welcome-message {
+.welcome-card {
   margin-bottom: 2rem;
+  text-align: center;
 }
 
-.events-section, .calendar-section, .overview-section {
-  margin-bottom: 2rem;
+.welcome-card .v-card-title {
+  font-size: 2.5rem;
+  font-weight: bold;
 }
 
-.event-cards {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+.events-card, .calendar-card, .overview-card {
+  margin-bottom: 2rem;
 }
 
 .event-card {
-  background: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 1rem;
-  width: 250px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .event-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.calendar {
+.calendar-card, .overview-card {
   background: #ffffff;
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 1rem;
-  min-height: 300px;
 }
 
-.overview-section ul {
-  list-style: none;
-  padding: 0;
+.v-list-item {
+  transition: background-color 0.3s ease;
 }
 
-.overview-section li {
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #ddd;
+.v-list-item:hover {
+  background-color: #f1f1f1;
 }
 
-.overview-section li:last-child {
-  border-bottom: none;
-}
-
-/* Fade-in Animation */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

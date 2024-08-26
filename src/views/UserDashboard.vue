@@ -1,254 +1,170 @@
 <!-- eslint-disable vue/require-toggle-inside-transition -->
 <template>
-    <div class="dashboard-layout">
-      <!-- Hamburger Menu -->
-      <div class="hamburger-menu" @click="toggleSidebar">
-        <i class="fas fa-bars"></i>
-      </div>
-  
-      <!-- Sidebar with Slide-In Animation -->
-      <transition name="slide">
-        <aside class="sidebar" :class="{ open: isSidebarOpen }">
-          <div class="sidebar-header">
-            <!-- Logo Image -->
-            <img src="../assets/c logo.png" alt="Logo" class="sidebar-logo" />
-            <h2 class="sidebar-title">Event Center</h2>
-          </div>
-          <ul class="sidebar-menu">
-            <li>
-              <router-link to="/user-dashboard">
-                <i class="fas fa-home"></i>
-                Dashboard
-              </router-link>
-            </li>
-            <li>
-              <router-link to="/user-dashboard/user-profile">
-                <i class="fas fa-user"></i>
-                User Profile
-              </router-link>
-            </li>
-            <li>
-              <router-link to="/user-dashboard/book-event">
-                <i class="fas fa-calendar-alt"></i>
-                Book Event
-              </router-link>
-            </li>
-            <li>
-              <router-link to="/user-dashboard/view-booked-events">
-                <i class="fas fa-calendar-check"></i>
-                View Booked Events
-              </router-link>
-            </li>
-            <hr class="sidebar-divider" />
-            <li>
-              <router-link to="/login">
-                <i class="fas fa-sign-out-alt"></i>
-                Logout
-              </router-link>
-            </li>
-          </ul>
-        </aside>
-      </transition>
-  
-      <!-- Main Content with Fade-In Transition -->
-      <transition name="fade">
-        <div class="content" :style="contentStyle">
-          <router-view /> <!-- This is where nested routes will be rendered -->
-        </div>
-      </transition>
-    </div>
-  </template>
-  
-  <script setup>
-  import { ref, watch } from 'vue';
-  
-  // Set the sidebar to open by default
-  const isSidebarOpen = ref(true);
-  const contentStyle = ref({ marginLeft: '250px' });
-  
-  // Function to toggle the sidebar and adjust content
-  const toggleSidebar = () => {
-    isSidebarOpen.value = !isSidebarOpen.value;
-  };
-  
-  // Watch for changes in the sidebar state to adjust content position
-  watch(isSidebarOpen, (newValue) => {
-    contentStyle.value.marginLeft = newValue ? '250px' : '30px'; // Adjusted margin-left when sidebar is closed
-  });
-  </script>
-  
-  <style scoped>
-  /* Existing styles */
-  </style>
-  
-  
-  <style scoped>
-  /* Dashboard Layout */
-  .dashboard-layout {
-    display: flex;
-    height: 100vh;
-    position: relative;
-  }
-  
-  /* Hamburger Menu */
-  .hamburger-menu {
-    position: absolute;
-    top: 1rem;
-    left: 1rem; /* Moved to the left side */
-    font-size: 2rem;
-    color: black; /* Changed to black */
-    cursor: pointer;
-    z-index: 1000;
-  }
-  
-  .hamburger-menu i:hover {
-    color: #f39c12;
-    transition: color 0.3s ease;
-  }
-  
-  /* Sidebar */
-  .sidebar {
-    width: 250px;
-    background-color: #2c3e50;
-    color: white;
-    padding: 2rem 1rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    transform: translateX(-100%);
-    opacity: 0;
-    transition: transform 0.5s ease, opacity 0.5s ease;
-  }
-  
-  .sidebar.open {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  
-  /* Logo Image */
-  .sidebar-logo {
-    width: 100px; /* Adjust as needed */
-    margin-top: 2rem; /* Space above the logo */
-    margin-bottom: 1rem; /* Space below the logo */
-  }
-  
-  /* Animation for sliding in and out */
-  .slide-enter-active {
-    animation: slideInMobile 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
-  }
-  
-  .slide-leave-active {
-    animation: slideOutMobile 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
-  }
-  
-  @keyframes slideInMobile {
-    0% {
-      transform: translateX(-100%);
-      opacity: 0;
-    }
-    100% {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-  
-  @keyframes slideOutMobile {
-    0% {
-      transform: translateX(0);
-      opacity: 1;
-    }
-    100% {
-      transform: translateX(-100%);
-      opacity: 0;
-    }
-  }
-  
-  /* Sidebar Menu Styling */
-  .sidebar-menu {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-    margin-top: 2rem;
-  }
-  
-  .sidebar-menu li {
-    margin: 1.5rem 0; /* Increased margin to prevent overlap with toggle menu */
-  }
-  
-  .sidebar-menu li a {
-    color: white;
-    text-decoration: none;
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    padding: 0.75rem;
-    transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
-    border-radius: 5px;
-  }
-  
-  .sidebar-menu li a i {
-    margin-right: 1rem;
-  }
-  
-  .sidebar-menu li a:hover {
-    background-color: #34495e;
-    color: #ecf0f1;
-    transform: translateX(5px);
-  }
-  
-  /* Sidebar Divider */
-  .sidebar-divider {
-    margin: 1.5rem 0;
-    border: none;
-    height: 1px;
-    background-color: rgba(255, 255, 255, 0.3);
-  }
-  
-  /* Fade-in Animation for Content */
-  .fade-enter-active, .fade-leave-active {
-    transition: opacity 0.5s ease;
-  }
-  
-  .fade-enter, .fade-leave-to {
-    opacity: 0;
-  }
-  
-  /* Content Area Styles */
-  .content {
-    flex-grow: 1;
-    padding: 2rem;
-    background-color: #ecf0f1;
-    overflow-y: auto;
-    font-family: Arial, sans-serif;
-    color: #333;
-  }
-  
-  /* Mobile Responsiveness */
-  @media (max-width: 768px) {
-    .dashboard-layout {
-      flex-direction: column;
-    }
-  
-    .sidebar {
-      width: 100%;
-      height: 100vh;
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 999;
-      transform: translateX(-100%);
-      opacity: 0;
-    }
-  
-    .content {
-      padding: 1rem;
-      margin-left: 0;
-    }
-  }
-  </style>
-  
+  <v-layout>
+    <!-- App Bar (Header) -->
+    <v-app-bar app color="primary" dark dense>
+      <v-app-bar-nav-icon @click="toggleSidebar" />
+      <h4 class="white--text ml-4">CROWNBIRTH</h4>
+      <v-spacer></v-spacer>
+      <v-btn icon>
+        <v-icon>mdi-bell</v-icon>
+      </v-btn>
+    </v-app-bar>
+
+    <!-- Sidebar (Navigation Drawer) -->
+    <v-navigation-drawer v-model="isSidebarOpen" app permanent width="260">
+      <!-- Sidebar Header with Logo -->
+      <v-list-item class="pa-4">
+        <v-list-item-avatar size="64">
+          <v-img src="../assets/c logo.png" alt="Logo" />
+        </v-list-item-avatar>
+        <v-list-item-content>
+          <v-list-item-title class="title font-weight-bold">Event Center</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+
+      <!-- Sidebar Menu Items -->
+      <v-divider></v-divider>
+      <v-list dense>
+        <v-list-item
+          v-for="(item, index) in menuItems"
+          :key="index"
+          @click="navigate(item.route)"
+          :class="{ 'active-item': isActiveRoute(item.route) }"
+        >
+          <template v-slot:prepend>
+            <v-icon>{{ item.icon }}</v-icon>
+          </template>
+          <v-list-item>
+            <v-list-item-title>{{ item.title }}</v-list-item-title>
+          </v-list-item>
+        </v-list-item>
+      </v-list>
+
+      <!-- Logout Button -->
+      <v-divider></v-divider>
+      <v-list dense>
+        <v-list-item @click="navigate('/login')">
+          <template v-slot:prepend>
+            <v-icon>mdi-logout</v-icon>
+          </template>
+          <v-list-item>
+            <v-list-item-title>Logout</v-list-item-title>
+          </v-list-item>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+
+    <!-- Main Content Area -->
+    <v-main>
+      <v-container fluid>
+        <router-view /> <!-- This will load the main content based on the current route -->
+      </v-container>
+    </v-main>
+  </v-layout>
+</template>
+
+
+<script setup>
+import { ref } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+
+// Sidebar toggle and menu items
+const isSidebarOpen = ref(true);
+const router = useRouter();
+const route = useRoute();
+
+// Sidebar menu items
+const menuItems = [
+  { title: 'Dashboard', route: '/user-dashboard', icon: 'mdi-view-dashboard' },
+  { title: 'User Profile', route: '/user-dashboard/user-profile', icon: 'mdi-account' },
+  { title: 'Book Event', route: '/user-dashboard/book-event', icon: 'mdi-calendar' },
+  { title: 'View Booked Events', route: '/user-dashboard/view-booked-events', icon: 'mdi-calendar-check' },
+  { title: 'Notifications', route: '/user-dashboard/notifications', icon: 'mdi-bell' }, // New Notifications item
+];
+
+// Function to toggle sidebar
+const toggleSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value;
+};
+
+// Navigation and active route highlight
+const navigate = (route) => {
+  router.push(route);
+};
+
+const isActiveRoute = (path) => {
+  return route.path === path;
+};
+</script>
+
+<style scoped>
+/* App Bar */
+.v-app-bar {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Sidebar */
+.v-navigation-drawer {
+  background-color: #34495e;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.v-list-item {
+  display: flex;
+  align-items: center;
+  color: #ecf0f1;
+  font-weight: 500;
+  padding: 12px 16px;
+  transition: all 0.3s ease;
+}
+
+.v-list-item:hover {
+  background-color: #2c3e50;
+  transform: translateX(5px);
+}
+
+.active-item {
+  background-color: #2c3e50 !important;
+  color: #f39c12 !important;
+}
+
+.v-list-item-icon {
+  margin-right: 10px;
+  color: #f39c12;
+}
+
+.v-divider {
+  background-color: #bdc3c7;
+}
+
+/* Typography */
+.title {
+  font-size: 1.4rem;
+  color: #f39c12;
+}
+
+.v-list-item-title {
+  font-size: 1.1rem;
+}
+
+/* Ensure icons and titles are aligned side-by-side */
+.v-list-item-content {
+  flex-grow: 1;
+}
+
+/* Content Area */
+.v-main {
+  background-color: #ecf0f1;
+  padding-top: 80px;
+}
+
+.v-container {
+  max-width: 90%;
+  margin: auto;
+}
+
+.v-btn {
+  color: #fff;
+}
+</style>

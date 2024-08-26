@@ -1,14 +1,14 @@
 <template>
   <div class="booking-container">
-    <h1>Book an Event</h1>
-    <p>Book your events through this page.</p>
+    <h1>Book an Event Space</h1>
+    <p>Book your event space through this page.</p>
     
     <form @submit.prevent="submitBooking">
       <div class="form-group">
-        <label for="venue">Venue:</label>
-        <select v-model="formData.venue" id="venue">
-          <option v-for="venue in venues" :key="venue.id" :value="venue.id">
-            {{ venue.name }} - ${{ venue.price }}
+        <label for="eventSpace">Event Space:</label>
+        <select v-model="formData.eventSpace" id="eventSpace" required>
+          <option v-for="space in eventSpaces" :key="space.id" :value="space.id">
+            {{ space.name }} - {{ formatCurrency(space.price) }}
           </option>
         </select>
       </div>
@@ -18,7 +18,10 @@
         <vue-cal 
           :events="availableDates"
           v-model="formData.date"
-          @dayClick="handleDateClick" />
+          @dayClick="handleDateClick"
+          hide-view-selector
+          time
+        />
       </div>
       
       <!-- Other form fields... -->
@@ -33,13 +36,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
-import VueCal from 'vue-cal'; // Import VueCal
-import 'vue-cal/dist/vuecal.css'; // Import VueCal styles
+import { getFirestore, collection, getDocs, addDoc, query, where } from 'firebase/firestore';
+// import VueCal from 'vue-cal'; // Import VueCal
+// import 'vue-cal/dist/vuecal.css'; // Import VueCal styles
 
 
 const formData = ref({
-  venue: '',
+  eventSpace: '',
   date: '',
   eventType: '',
   guests: '',
@@ -47,20 +50,21 @@ const formData = ref({
   time: '',
   email: ''
 });
-const venues = ref([]);
+const eventSpaces = ref([]);
 const availableDates = ref([]);
 const loading = ref(false);
 const paymentSuccess = ref(false);
 
 const db = getFirestore();
 
-const fetchData = async () => {
+const fetchEventSpaces = async () => {
   try {
-    const venuesQuery = query(collection(db, 'venues'));
-    const querySnapshot = await getDocs(venuesQuery);
-    venues.value = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const spacesQuery = query(collection(db, 'event_spaces'));
+    const querySnapshot = await getDocs(spacesQuery);
+    eventSpaces.value = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    const datesQuery = query(collection(db, 'events'), where('status', '==', 'available'));
+    // Fetch available dates from "bookings" collection
+    const datesQuery = query(collection(db, 'bookings'), where('status', '==', 'available'));
     const datesSnapshot = await getDocs(datesQuery);
     availableDates.value = datesSnapshot.docs.map(doc => ({ date: doc.data().date }));
   } catch (error) {
@@ -71,10 +75,22 @@ const fetchData = async () => {
 const submitBooking = async () => {
   loading.value = true;
   try {
+    // Add the booking details to Firestore
+    await addDoc(collection(db, 'bookings'), {
+      eventSpaceId: formData.value.eventSpace,
+      date: formData.value.date,
+      eventType: formData.value.eventType,
+      guests: formData.value.guests,
+      duration: formData.value.duration,
+      time: formData.value.time,
+      email: formData.value.email,
+      status: 'pending' // Initial status
+    });
+
     await proceedToPayment();
     paymentSuccess.value = true;
   } catch (error) {
-    console.error('Payment error:', error);
+    console.error('Booking or payment error:', error);
   } finally {
     loading.value = false;
   }
@@ -85,18 +101,19 @@ const proceedToPayment = async () => {
 };
 
 onMounted(() => {
-  fetchData();
+  fetchEventSpaces();
 });
 
 const handleDateClick = (date) => {
   formData.value.date = date;
 };
+
+// Utility to format currency
+const formatCurrency = (value) => {
+  if (value === undefined || value === null) return '#0.00';
+  return `#${parseFloat(value).toLocaleString('en-US')}`;
+};
 </script>
-
-<style scoped>
-/* Add your styles here */
-</style>
-
 
 <style scoped>
 .booking-container {

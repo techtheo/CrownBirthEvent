@@ -31,13 +31,13 @@ export default {
     actions:{
         
         async getSubCategories({commit}) {
-            let subCategory = await axios.post(process.env.VUE_APP_BASE_URL+'/sub-category/all', {status:true});
+            let subCategory = await axios.post(import.meta.env.VUE_APP_BASE_URL+'/sub-category/all', {status:true});
 
             commit('setSubCategory',subCategory)
         },
 
         async getNestedSubCategories({commit}) {
-            let data = await axios.post(process.env.VUE_APP_BASE_URL+'/nested-sub-category/all', {status:true});
+            let data = await axios.post(import.meta.env.VUE_APP_BASE_URL+'/nested-sub-category/all', {status:true});
             // let ndata = data.data.data.map(element => {
             //     let name= `${element.name} (${element.sub_category && element.sub_category.sub_category_name})`
             //     return {
@@ -55,7 +55,7 @@ export default {
             commit('nestedSubCategories',data.data.data)
         },
         async getProductDisease({commit}) {
-            let data = await axios.post(process.env.VUE_APP_BASE_URL+'/disease/all', {status:true});
+            let data = await axios.post(import.meta.env.VUE_APP_BASE_URL+'/disease/all', {status:true});
             
             commit('productDisease',data.data.data)
         }

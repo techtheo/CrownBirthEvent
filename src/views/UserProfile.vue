@@ -1,69 +1,114 @@
 <template>
-  <div class="profile-container">
-    <h1>User Profile</h1>
-    <p>Edit your user details here.</p>
-    
-    <!-- Display user details -->
-    <div v-if="user">
-      <!-- Update Profile Form -->
-      <form @submit.prevent="updateUserProfile">
-        <div class="form-group">
-          <label for="username">Username:</label>
-          <input v-model="user.username" id="username" type="text" />
-        </div>
-        <div class="form-group">
-          <label for="email">Email:</label>
-          <input v-model="user.email" id="email" type="email" />
-        </div>
-        <button type="submit" :disabled="loading || !isProfileValid">
-          <span v-if="loading && !passwordUpdating" class="spinner"></span>
-          Update Profile
-        </button>
-      </form>
-      
-      <!-- Change Password Form -->
-      <form @submit.prevent="changePassword">
-        <div class="form-group">
-          <label for="currentPassword">Current Password:</label>
-          <input v-model="currentPassword" id="currentPassword" type="password" placeholder="Enter current password" />
-        </div>
-        <div class="form-group">
-          <label for="newPassword">New Password:</label>
-          <input v-model="newPassword" id="newPassword" type="password" placeholder="Enter new password" />
-          <small class="password-hint">Password must be at least 8 characters, contain uppercase, lowercase, number, and special character.</small>
-        </div>
-        <div class="form-group">
-          <label for="confirmPassword">Confirm New Password:</label>
-          <input v-model="confirmPassword" id="confirmPassword" type="password" placeholder="Confirm new password" />
-        </div>
-        <button type="submit" :disabled="loading || !isPasswordValid">
-          <span v-if="loading && passwordUpdating" class="spinner"></span>
-          Change Password
-        </button>
-      </form>
-    </div>
-    <p v-else>Loading...</p>
+  <v-container class="profile-container" fluid>
+    <v-row>
+      <v-col cols="12">
+        <v-typography variant="h1" class="mb-4">User Profile</v-typography>
+        <v-typography variant="body1" class="mb-6">Edit your user details here.</v-typography>
+      </v-col>
+    </v-row>
 
-    <!-- Success/Failure Alert -->
-    <transition name="fade">
-      <div v-if="successMessage" class="alert success">
-        {{ successMessage }}
-      </div>
-    </transition>
-    <transition name="fade">
-      <div v-if="errorMessage" class="alert error">
-        {{ errorMessage }}
-      </div>
-    </transition>
-  </div>
+    <!-- Display user details -->
+    <v-row v-if="user">
+      <!-- Update Profile Form -->
+      <v-col cols="12" md="6">
+        <v-card class="pa-4">
+          <v-card-title>Update Profile</v-card-title>
+          <v-form @submit.prevent="reauthenticateAndUpdateProfile">
+            <v-text-field v-model="user.username" label="Username" outlined />
+            <v-text-field v-model="user.email" label="Email" type="email" outlined />
+            <v-text-field
+              v-model="confirmCurrentPassword"
+              :type="showPassword.confirmCurrent ? 'text' : 'password'"
+              label="Confirm Current Password"
+              outlined
+            >
+              <template v-slot:append>
+                <v-icon @click="togglePasswordVisibility('confirmCurrent')">
+                  {{ showPassword.confirmCurrent ? 'mdi-eye-off' : 'mdi-eye' }}
+                </v-icon>
+              </template>
+            </v-text-field>
+            <v-btn type="submit" :disabled="loading || !isProfileValid" color="primary" class="mt-4">
+              <v-spinner v-if="loading && !passwordUpdating" size="24" color="white" />
+              Update Profile
+            </v-btn>
+          </v-form>
+        </v-card>
+      </v-col>
+
+      <!-- Change Password Form -->
+      <v-col cols="12" md="6">
+        <v-card class="pa-4">
+          <v-card-title>Change Password</v-card-title>
+          <v-form @submit.prevent="changePassword">
+            <v-text-field
+              v-model="currentPassword"
+              :type="showPassword.current ? 'text' : 'password'"
+              label="Current Password"
+              outlined
+              @input="validatePasswordChange"
+            >
+              <template v-slot:append>
+                <v-icon @click="togglePasswordVisibility('current')">
+                  {{ showPassword.current ? 'mdi-eye-off' : 'mdi-eye' }}
+                </v-icon>
+              </template>
+            </v-text-field>
+            <v-text-field
+              v-model="newPassword"
+              :type="showPassword.new ? 'text' : 'password'"
+              label="New Password"
+              outlined
+              @input="validatePasswordChange"
+            >
+              <template v-slot:append>
+                <v-icon @click="togglePasswordVisibility('new')">
+                  {{ showPassword.new ? 'mdi-eye-off' : 'mdi-eye' }}
+                </v-icon>
+              </template>
+            </v-text-field>
+            <v-text-field
+              v-model="confirmPassword"
+              :type="showPassword.confirm ? 'text' : 'password'"
+              label="Confirm New Password"
+              outlined
+              @input="validatePasswordChange"
+            >
+              <template v-slot:append>
+                <v-icon @click="togglePasswordVisibility('confirm')">
+                  {{ showPassword.confirm ? 'mdi-eye-off' : 'mdi-eye' }}
+                </v-icon>
+              </template>
+            </v-text-field>
+            <small class="password-hint">Password must be at least 8 characters, contain uppercase, lowercase, number, and special character.</small>
+            <v-btn type="submit" color="primary" class="mt-4">
+              <v-spinner v-if="loading && passwordUpdating" size="24" color="white" />
+              Change Password
+            </v-btn>
+          </v-form>
+        </v-card>
+      </v-col>
+    </v-row>
+    
+    <v-row>
+      <!-- Success/Failure Alert -->
+      <v-col cols="12">
+        <v-alert v-if="successMessage" type="success" class="mt-4">
+          {{ successMessage }}
+        </v-alert>
+        <v-alert v-if="errorMessage" type="error" class="mt-4">
+          {{ errorMessage }}
+        </v-alert>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { getAuth, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+import { getAuth, reauthenticateWithCredential, updatePassword, EmailAuthProvider } from 'firebase/auth';
 import { getFirestore, doc, getDoc, updateDoc } from 'firebase/firestore';
 
-// References
 const user = ref({
   username: '',
   email: ''
@@ -71,29 +116,42 @@ const user = ref({
 const currentPassword = ref('');
 const newPassword = ref('');
 const confirmPassword = ref('');
+const confirmCurrentPassword = ref(''); // For confirming current password during profile update
 const auth = getAuth();
 const db = getFirestore();
 const loading = ref(false);
 const successMessage = ref('');
 const errorMessage = ref('');
 const passwordUpdating = ref(false);
+const initialUser = ref({ username: '', email: '' }); // Store initial user data
+const showPassword = ref({
+  current: false,
+  new: false,
+  confirm: false,
+  confirmCurrent: false
+}); // Control password visibility
 
-// Computed properties for form validation
-const isProfileValid = computed(() => user.value.username && user.value.email);
-const isPasswordValid = computed(() => {
-  return newPassword.value === confirmPassword.value &&
-         validatePassword(newPassword.value) &&
-         currentPassword.value;
-});
+// Add isPasswordDirty to track changes in password fields
+const isPasswordDirty = ref(false);
 
-// Fetch user data from Firestore
+const isProfileValid = computed(() => user.value.username && user.value.email && confirmCurrentPassword.value);
+
+// New function to validate password change and update isPasswordDirty
+const validatePasswordChange = () => {
+  if (currentPassword.value || newPassword.value || confirmPassword.value) {
+    isPasswordDirty.value = true;
+  } else {
+    isPasswordDirty.value = false;
+  }
+};
+
 const fetchUserData = async (uid) => {
   try {
-    const userDoc = doc(db, 'users', uid); // Fetch document from 'users' collection
+    const userDoc = doc(db, 'users', uid);
     const docSnap = await getDoc(userDoc);
-
     if (docSnap.exists()) {
-      user.value = docSnap.data(); // Store user data
+      user.value = docSnap.data();
+      initialUser.value = { ...docSnap.data() }; // Save initial data
     } else {
       console.log('No such user data!');
     }
@@ -102,191 +160,140 @@ const fetchUserData = async (uid) => {
   }
 };
 
-// Password validation function
 const validatePassword = (password) => {
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
   return passwordRegex.test(password);
 };
 
-// Update user profile
-const updateUserProfile = async () => {
-  loading.value = true; // Start loading
-  if (auth.currentUser) {
-    try {
-      const userDoc = doc(db, 'users', auth.currentUser.uid);
-      await updateDoc(userDoc, {
-        username: user.value.username,
-        email: user.value.email
-      });
-      successMessage.value = 'Profile updated successfully'; // Set success message
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      errorMessage.value = 'Error updating profile'; // Set error message
-    } finally {
-      loading.value = false; // End loading
-      setTimeout(() => successMessage.value = '', 3000); // Clear message after 3 seconds
-      setTimeout(() => errorMessage.value = '', 3000); // Clear error after 3 seconds
-    }
-  } else {
-    console.log('User is not authenticated.');
+const reauthenticateAndUpdateProfile = async () => {
+  loading.value = true;
+  
+  // Check if user is authenticated
+  if (!auth.currentUser) {
     errorMessage.value = 'User is not authenticated';
+    loading.value = false;
+    return;
+  }
+
+  // Check if the updated profile is the same as the current profile
+  if (user.value.username === initialUser.value.username && user.value.email === initialUser.value.email) {
+    errorMessage.value = 'No changes detected. Please update your profile details.';
+    loading.value = false;
+    return;
+  }
+
+  try {
+    // Re-authenticate the user
+    const credential = EmailAuthProvider.credential(
+      auth.currentUser.email,
+      confirmCurrentPassword.value
+    );
+    await reauthenticateWithCredential(auth.currentUser, credential);
+
+    // Proceed with updating the user profile
+    const userDoc = doc(db, 'users', auth.currentUser.uid);
+    await updateDoc(userDoc, {
+      username: user.value.username,
+      email: user.value.email
+    });
+
+    successMessage.value = 'Profile updated successfully';
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    errorMessage.value = 'Error updating profile: ' + error.message;
+  } finally {
+    loading.value = false;
+    setTimeout(() => successMessage.value = '', 3000);
+    setTimeout(() => errorMessage.value = '', 3000);
   }
 };
 
-// Change password
 const changePassword = async () => {
-  passwordUpdating.value = true; // Indicate that password is being updated
-  if (auth.currentUser && currentPassword.value) {
-    // Check if new password matches the confirm password
-    if (newPassword.value !== confirmPassword.value) {
-      errorMessage.value = "New passwords do not match";
-      passwordUpdating.value = false;
-      return;
-    }
-    
-    // Validate the new password based on signup page rules
-    if (!validatePassword(newPassword.value)) {
-      errorMessage.value = "Password must be at least 8 characters long, contain uppercase, lowercase, number, and special character.";
-      passwordUpdating.value = false;
-      return;
-    }
+  passwordUpdating.value = true;
 
-    try {
-      // Reauthenticate the user with the current password
-      const credential = EmailAuthProvider.credential(
-        auth.currentUser.email,
-        currentPassword.value
-      );
-      await reauthenticateWithCredential(auth.currentUser, credential);
-
-      // Update to the new password
-      await updatePassword(auth.currentUser, newPassword.value);
-      successMessage.value = 'Password changed successfully'; // Set success message
-    } catch (error) {
-      console.error('Error changing password:', error);
-      errorMessage.value = 'Error changing password'; // Set error message
-    } finally {
-      passwordUpdating.value = false; // End password update
-      setTimeout(() => successMessage.value = '', 3000); // Clear message after 3 seconds
-      setTimeout(() => errorMessage.value = '', 3000); // Clear error after 3 seconds
-    }
-  } else {
-    errorMessage.value = 'Please enter your current password';
+  // Check if user is authenticated
+  if (!auth.currentUser) {
+    errorMessage.value = 'User is not authenticated';
     passwordUpdating.value = false;
+    return;
   }
+
+  if (!currentPassword.value || !newPassword.value || !confirmPassword.value) {
+    errorMessage.value = 'Please fill in all password fields.';
+    passwordUpdating.value = false;
+    return;
+  }
+
+  // Proceed with password change
+  if (newPassword.value !== confirmPassword.value) {
+    errorMessage.value = "New passwords do not match";
+    passwordUpdating.value = false;
+    return;
+  }
+
+  if (!validatePassword(newPassword.value)) {
+    errorMessage.value = "New password does not meet the criteria.";
+    passwordUpdating.value = false;
+    return;
+  }
+
+  try {
+    // Re-authenticate the user
+    const credential = EmailAuthProvider.credential(
+      auth.currentUser.email,
+      currentPassword.value
+    );
+    await reauthenticateWithCredential(auth.currentUser, credential);
+
+    // Update the password
+    await updatePassword(auth.currentUser, newPassword.value);
+
+    // Fetch updated user data from the database
+    await fetchUserData(auth.currentUser.uid);
+
+    successMessage.value = 'Password updated successfully';
+
+    // Reload the page to reflect the changes
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000); // Adding a slight delay before reload for smoother experience
+  } catch (error) {
+    console.error('Error changing password:', error);
+    errorMessage.value = 'Error changing password: ' + error.message;
+  } finally {
+    passwordUpdating.value = false;
+    setTimeout(() => successMessage.value = '', 3000);
+    setTimeout(() => errorMessage.value = '', 3000);
+  }
+};
+
+const togglePasswordVisibility = (field) => {
+  showPassword.value[field] = !showPassword.value[field];
 };
 
 // Fetch user data when component is mounted
 onMounted(() => {
-  const currentUser = auth.currentUser;
-  if (currentUser) {
-    fetchUserData(currentUser.uid); // Call the function with the user's UID
+  const userId = auth.currentUser ? auth.currentUser.uid : null;
+  if (userId) {
+    fetchUserData(userId);
   }
 });
 </script>
 
-
 <style scoped>
 .profile-container {
-  padding: 2rem;
-  background-color: #f9f9f9;
-  min-height: 100vh;
-  max-width: 600px; /* Constrain the container width */
-  margin: 0 20px; /* Center the container horizontally */
-}
-
-h1, p {
-  text-align: left; /* Align headings and paragraphs to the left */
-}
-
-.form-group {
-  margin-bottom: 1.5rem; /* Increase the spacing between form fields */
-}
-
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-input {
-  width: 100%; /* Ensure inputs take full width of their container */
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  position: relative;
-  text-align: left;
-  width: 100%; /* Make button take full width */
-}
-
-button:disabled {
-  background-color: #6c757d;
-  cursor: not-allowed;
-}
-
-.spinner {
-  position: absolute;
-  border: 2px solid #f3f3f3;
-  border-top: 2px solid #007bff;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  animation: spin 1s linear infinite;
-  top: 50%;
-  left: 10px;
-  transform: translateY(-50%);
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.alert {
-  padding: 1rem;
-  margin-top: 1rem;
-  border-radius: 4px;
-  color: white;
-  font-weight: bold;
-  text-align: left;
-}
-
-.success {
-  background-color: #28a745;
-}
-
-.error {
-  background-color: #dc3545;
-}
-
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.5s;
-}
-.fade-enter, .fade-leave-to {
-  opacity: 0;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
 .password-hint {
-  color: #6c757d;
-  font-size: 0.875rem;
-  text-align: left;
+  font-size: 12px;
+  color: #888;
+  margin-top: -8px;
 }
 
-/* Spacing adjustments */
-form {
-  margin-top: 2rem; /* Add space between the forms */
-}
-
-form:first-of-type {
-  margin-top: 1rem; /* Add space only to the first form (for the profile update) */
+.v-spinner {
+  margin-right: 8px;
 }
 </style>
