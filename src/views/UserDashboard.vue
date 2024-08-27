@@ -5,8 +5,17 @@
       <v-app-bar-nav-icon @click="toggleSidebar" />
       <h4 class="white--text ml-4">CROWNBIRTH</h4>
       <v-spacer></v-spacer>
-      <v-btn icon>
-        <v-icon>mdi-bell</v-icon>
+      <v-btn icon @click="navigate('/user-dashboard/notifications')">
+        <v-badge
+          v-if="notificationCount > 0"
+          :value="notificationCount"
+          color="red"
+          content=" "
+          overlap
+        >
+          <v-icon>mdi-bell</v-icon>
+        </v-badge>
+        <v-icon v-else>mdi-bell</v-icon>
       </v-btn>
     </v-app-bar>
 
@@ -63,15 +72,19 @@
   </v-layout>
 </template>
 
-
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { getFirestore, collection, query, where, getCountFromServer } from 'firebase/firestore';
+
+// Initialize Firestore
+const db = getFirestore();
 
 // Sidebar toggle and menu items
 const isSidebarOpen = ref(true);
 const router = useRouter();
 const route = useRoute();
+const notificationCount = ref(0); // Initialize with the default notification count
 
 // Sidebar menu items
 const menuItems = [
@@ -79,7 +92,7 @@ const menuItems = [
   { title: 'User Profile', route: '/user-dashboard/user-profile', icon: 'mdi-account' },
   { title: 'Book Event', route: '/user-dashboard/book-event', icon: 'mdi-calendar' },
   { title: 'View Booked Events', route: '/user-dashboard/view-booked-events', icon: 'mdi-calendar-check' },
-  { title: 'Notifications', route: '/user-dashboard/notifications', icon: 'mdi-bell' }, // New Notifications item
+  { title: 'Notifications', route: '/user-dashboard/notifications', icon: 'mdi-bell' },
 ];
 
 // Function to toggle sidebar
@@ -95,6 +108,23 @@ const navigate = (route) => {
 const isActiveRoute = (path) => {
   return route.path === path;
 };
+
+// Fetch or update the notification count from Firestore
+const fetchNotificationCount = async () => {
+  try {
+    const notificationsRef = collection(db, 'notifications');
+    const q = query(notificationsRef, where('status', '==', 'unread'));
+    const snapshot = await getCountFromServer(q);
+    notificationCount.value = snapshot.data().count;
+  } catch (error) {
+    console.error('Error fetching notification count:', error);
+  }
+};
+
+// Call the function to fetch notification count when the component is mounted
+onMounted(() => {
+  fetchNotificationCount();
+});
 </script>
 
 <style scoped>
@@ -165,5 +195,22 @@ const isActiveRoute = (path) => {
 
 .v-btn {
   color: #fff;
+}
+
+.v-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.v-badge .v-badge__content {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
 }
 </style>
