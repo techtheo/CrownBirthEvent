@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
-import Login from '../components/auth/LogIn.vue';
+import Login from '../components/auth/Login.vue';
 import SignUp from '../components/auth/SignUp.vue';
 import UserDashboard from '../views/UserDashboard.vue';
-import DashBoard from '../views/DashBoard.vue';
+import DashBoard from '../views/Dashboard.vue';
 import UserProfile from '../views/UserProfile.vue';
 import BookEvent from '../views/BookEvent.vue';
 import ViewBookedEvents from '../views/ViewBookedEvents.vue';
@@ -13,6 +13,7 @@ import Overview from '../views/Overview.vue'; // Import Overview component for A
 import AdminProfile from '../views/AdminProfile.vue'; // Import Admin Profile component
 import ManageEvents from '../views/ManageEvents.vue'; // Import Manage Events component
 import ViewAllBookings from '../views/ViewAllBookings.vue'; // Import View All Bookings component
+import ConfirmationPage from '../views/ConfirmationPage.vue'; // Import the Confirmation Page component
 import { getAuth, signOut } from 'firebase/auth'; // Import Firebase auth functions
 
 const auth = getAuth();
@@ -41,7 +42,11 @@ const router = createRouter({
       children: [
         { path: '', component: DashBoard },
         { path: 'user-profile', component: UserProfile },
-        { path: 'book-event', component: BookEvent },
+        { path: 'book-event', component: BookEvent, 
+          children: [
+            { path: 'confirmation', name: 'ConfirmationPage', component: ConfirmationPage },
+          ]
+        },
         { path: 'view-booked-events', component: ViewBookedEvents },
         { path: 'notifications', component: Notifications }, // Add the Notifications route
       ],
@@ -56,6 +61,11 @@ const router = createRouter({
         { path: 'manage-events', component: ManageEvents },
         { path: 'view-all-bookings', component: ViewAllBookings },
       ],
+    },
+    {
+      path: '/confirmation',
+      name: 'ConfirmationPage',
+      component: ConfirmationPage, // Add the ConfirmationPage route
     },
     {
       path: '/logout',
