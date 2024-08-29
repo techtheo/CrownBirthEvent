@@ -63,12 +63,11 @@ onMounted(() => {
           <li><router-link to="/about">About Us</router-link></li>
           <li><router-link to="/booking">Booking</router-link></li>
           <li><router-link to="/contact">Contact</router-link></li>
+          <li><router-link class="cta-btn" to="/">Login/Register</router-link></li>
         </ul>
         <!-- <i class="mobile-nav-close bi bi-x" @click="toggleMenu"></i> -->
         <i :class="['mobile-nav-toggle', 'd-xl-none', isMenuOpen ? 'bi bi-list' : ' bi bi-list']" @click="toggleMenu"></i>
       </nav>
-
-      <router-link class="cta-btn d-none d-sm-block" to="/">Login/Register</router-link>
     </div>
   </header>
 
@@ -83,7 +82,7 @@ onMounted(() => {
         <h2 data-aos="fade-up" data-aos-delay="100" class="">CrownBIRTH<br><span>EVENT CENTRE</span></h2>
         <p data-aos="fade-up" data-aos-delay="200">IJEBU_IFE</p>
         <div data-aos="fade-up" data-aos-delay="300" class="">
-          <a href="#" class="glightbox pulsating-play-btn mt-3"></a>
+          <a href="https://lh3.googleusercontent.com/ggs/AF1QipMzms_CJCbewDac719QTBomdJ7KkpDSMMXad1GO=m18" class="glightbox pulsating-play-btn mt-3"></a>
         </div>
       </div>
 
@@ -641,9 +640,9 @@ onMounted(() => {
   flex-direction: column;
   width: 100%;
 }
-@media (max-width: 475px) {
-  .bi-x {
-    display: inline-block;
+@media (max-width: 1024px) {
+  .bi-list {
+    display:none;
   }
 }
 /* Full-screen menu for mobile view */
@@ -663,12 +662,6 @@ onMounted(() => {
 
   .navmenu ul.active {
     display: flex;
-  }
-
-  .mobile-nav-toggle {
-    display: block;
-    font-size: 1.5rem;
-    cursor: pointer;
   }
 
   .navmenu ul ul {
