@@ -13,10 +13,12 @@
   "dependencies": {
     "18": "^0.0.0",
     "@mdi/font": "^7.4.47",
+    "@stripe/stripe-js": "^4.3.0",
     "@syncfusion/ej2-vue-calendars": "^26.2.10",
     "firebase": "^10.12.5",
     "flatpickr": "^4.6.13",
     "pinia": "^2.1.7",
+    "uuid": "^10.0.0",
     "vue": "^3.4.29",
     "vue-cal": "^4.9.0",
     "vue-flatpickr-component": "^11.0.5",

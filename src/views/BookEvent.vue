@@ -107,28 +107,6 @@
     </button>
 
     <div v-if="loading" class="spinner">Loading...</div>
-
-    <!-- Booking Confirmation Modal -->
-    <v-dialog v-model="showModal" max-width="600px">
-      <v-card>
-        <v-card-title>Booking Confirmation</v-card-title>
-        <v-card-text>
-          <div>
-            <p><strong>Event Space:</strong> {{ selectedEventSpaceName }}</p>
-            <p><strong>Date:</strong> {{ formData.date }}</p>
-            <p><strong>Time:</strong> {{ formData.time }}</p>
-            <p><strong>Event Type:</strong> {{ formData.eventType }}</p>
-            <p><strong>Guests:</strong> {{ formData.guests }}</p>
-            <p><strong>Duration:</strong> {{ formData.duration }}</p>
-            <p><strong>Total Amount Paid:</strong> {{ formatCurrency(selectedEventSpacePrice) }}</p>
-          </div>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn color="primary" @click="printReceipt">Print</v-btn>
-          <v-btn color="secondary" @click="closeModal">Close</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </div>
 </template>
 
@@ -139,6 +117,8 @@ import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.css';
 import { useRouter } from 'vue-router';
 import { getAuth } from 'firebase/auth';
+
+const paystackScriptLoaded = ref(false);
 
 const formData = ref({
   eventSpace: '',
@@ -155,8 +135,7 @@ const bookedTimes = ref([]);
 const loading = ref(false);
 const bookingSuccess = ref(false);
 const selectedEventSpacePrice = ref(0);
-const selectedEventSpaceName = ref('');
-const showModal = ref(false);
+const bookingId = ref(''); // Store the booking ID for later use
 
 const db = getFirestore();
 const router = useRouter();
@@ -204,7 +183,7 @@ const fetchBookedDatesAndTimes = () => {
 };
 
 const bookEvent = async () => {
-  if (!isFormValid.value) {
+  if (!isFormValid) {
     alert("Please fill out all required fields.");
     return;
   }
@@ -248,13 +227,17 @@ const bookEvent = async () => {
       duration: formData.value.duration,
       email: formData.value.email,
       userId: userId, // Store user ID
-      status: 'pending' // Initial status
+      status: 'pending', // Initial status
+      paymentStatus: 'unpaid', // New field for payment status
+      paymentReference: '' // New field for payment reference
     });
 
-    // Retrieve the selected event space price and name
+    // Store the booking ID
+    bookingId.value = bookingRef.id;
+
+    // Retrieve the selected event space price
     const eventSpaceDoc = await getDoc(doc(db, 'event_spaces', formData.value.eventSpace));
     selectedEventSpacePrice.value = eventSpaceDoc.data().price;
-    selectedEventSpaceName.value = eventSpaceDoc.data().name;
 
     bookingSuccess.value = true;
   } catch (error) {
@@ -264,69 +247,34 @@ const bookEvent = async () => {
   }
 };
 
-const proceedToPayment = () => {
-  if (!window.PaystackPop) {
-    console.error('Paystack library not loaded.');
-    return;
-  }
+const updatePaymentStatus = (reference) => {
+  return updateDoc(doc(db, 'bookings', bookingId.value), {
+    paymentStatus: 'paid',
+    paymentReference: reference
+  });
+};
 
+const proceedToPayment = () => {
   const handler = PaystackPop.setup({
-    key: 'pk_test_1fe63b3c0b80d70970e3b941fe5117d5af23aa23',
+    key: 'pk_test_1fe63b3c0b80d70970e3b941fe5117d5af23aa23', // Replace with your Paystack public key
     email: formData.value.email,
-    amount: selectedEventSpacePrice.value * 100,
+    amount: selectedEventSpacePrice.value * 100, // Amount in kobo
     currency: 'NGN',
-    ref: 'CB' + Math.floor(Math.random() * 1000000000 + 1),
-    callback: async function (response) {
-      await handlePaymentSuccess(response.reference);
+    ref: 'CB' + Math.floor(Math.random() * 1000000000 + 1), // Reference should be unique for every transaction
+    callback: function (response) {
+      // Payment complete! Record the reference in the backend
+      updatePaymentStatus(response.reference).then(() => {
+        alert('Payment complete! Reference: ' + response.reference);
+        router.push('/confirmation'); // Navigate to confirmation page
+      }).catch(error => {
+        console.error('Error updating payment status:', error);
+      });
     },
     onClose: function () {
       alert('Transaction was not completed, window closed.');
     }
   });
-
   handler.openIframe();
-};
-
-const handlePaymentSuccess = async (reference) => {
-  try {
-    const bookingsQuery = collection(db, 'bookings');
-    const q = query(
-      bookingsQuery,
-      where('eventSpaceId', '==', formData.value.eventSpace),
-      where('date', '==', formData.value.date),
-      where('time', '==', formData.value.time)
-    );
-
-    const querySnapshot = await getDocs(q);
-
-    if (!querySnapshot.empty) {
-      querySnapshot.forEach(async (docSnapshot) => {
-        const bookingDocRef = doc(db, 'bookings', docSnapshot.id);
-        await updateDoc(bookingDocRef, {
-          status: 'paid', // Update the status to "paid"
-          paymentReference: reference // Save the payment reference ID
-        });
-      });
-
-      // Update the UI after successful payment
-      bookingSuccess.value = false; // Optionally hide the payment button
-      showModal.value = true; // Show the modal with booking details
-    } else {
-      console.error('No matching booking found to update.');
-      alert('No matching booking found. Please contact support.');
-    }
-  } catch (error) {
-    console.error('Error during payment success handling:', error);
-    alert('There was an error processing your payment. Please contact support.');
-  }
-};
-
-const printReceipt = () => {
-  window.print();
-};
-
-const closeModal = () => {
-  showModal.value = false;
 };
 
 onMounted(async () => {
@@ -353,6 +301,11 @@ onMounted(async () => {
   const script = document.createElement('script');
   script.src = "https://js.paystack.co/v1/inline.js";
   script.async = true;
+  script.onload = () => paystackScriptLoaded.value = true; // Set to true when the script loads
+  script.onerror = () => {
+    console.error('Failed to load Paystack script.');
+    paystackScriptLoaded.value = false;
+  };
   document.body.appendChild(script);
 });
 
