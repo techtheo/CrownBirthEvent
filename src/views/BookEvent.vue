@@ -21,16 +21,19 @@
       </v-row>
     </div>
 
+    <div class="form-group">
+      <label for="duration">Duration:</label>
+      <select id="duration" v-model="formData.duration" class="form-control" @change="updateTimePicker">
+        <option value="full-day">Full Day (8:00 AM to 7:00 PM)</option>
+        <option value="half-day-morning">Half Day (Morning - 8:00 AM to 2:30 PM)</option>
+        <option value="half-day-afternoon">Half Day (Afternoon - 2:30 PM to 7:00 PM)</option>
+      </select>
+    </div>
+
     <!-- Date picker -->
     <div class="form-group">
       <label for="datetimepicker">Select Date:</label>
       <input id="datetimepicker" type="text" placeholder="Select a date" class="flatpickr-input" />
-    </div>
-
-    <!-- Time picker -->
-    <div class="form-group">
-      <label for="timepicker">Select Time:</label>
-      <input id="timepicker" type="text" placeholder="Select a time" class="flatpickr-input" />
     </div>
 
     <!-- Additional form fields -->
@@ -54,15 +57,6 @@
         placeholder="Enter the number of guests"
         class="form-control"
       />
-    </div>
-
-    <div class="form-group">
-      <label for="duration">Duration:</label>
-      <select id="duration" v-model="formData.duration" class="form-control">
-        <option value="full-day">Full Day</option>
-        <option value="half-day">Half Day</option>
-        <option value="hourly">Hourly</option>
-      </select>
     </div>
 
     <div class="form-group">
@@ -238,8 +232,9 @@ const bookEvent = async () => {
       bookingsQuery,
       where('eventSpaceId', '==', formData.value.eventSpace),
       where('date', '==', formData.value.date),
-      where('time', '==', formData.value.time)
+      where('time', '==', getTimeForDuration(formData.value.duration)) // Use time based on duration
     )
+
 
     const querySnapshot = await getDocs(q)
 
@@ -263,7 +258,7 @@ const bookEvent = async () => {
       eventSpaceImage: image, // Save the event space image URL
       amount: price, // Save the amount
       date: formData.value.date,
-      time: formData.value.time,
+      time: getTimeForDuration(formData.value.duration),
       eventType: formData.value.eventType,
       guests: formData.value.guests,
       duration: formData.value.duration,
@@ -280,11 +275,26 @@ const bookEvent = async () => {
     // Store the selected event space price for payment
     selectedEventSpacePrice.value = price
 
+    alert('Your booking was successful. Please proceed to payment.')
     bookingSuccess.value = true
   } catch (error) {
-    console.error('Booking error:', error)
+    console.error('Error booking event:', error)
   } finally {
     loading.value = false
+  }
+}
+
+
+const getTimeForDuration = (duration) => {
+  switch (duration) {
+    case 'full-day':
+      return '08:00 AM - 07:00 PM'
+    case 'half-day-morning':
+      return '08:00 AM - 02:30 PM'
+    case 'half-day-afternoon':
+      return '02:30 PM - 07:00 PM'
+    default:
+      return ''
   }
 }
 
@@ -334,19 +344,19 @@ onMounted(async () => {
   await nextTick()
 
   // Initialize flatpickr for date selection
-  updateDatePicker()
+  // updateDatePicker()
 
-  flatpickr('#timepicker', {
-    enableTime: true,
-    noCalendar: true,
-    dateFormat: 'H:i',
-    minTime: '08:00',
-    maxTime: '19:00',
-    disable: bookedTimes.value,
-    onChange: (selectedDates) => {
-      formData.value.time = selectedDates[0] ? selectedDates[0].toTimeString().split(' ')[0] : ''
-    }
-  })
+  // flatpickr('#timepicker', {
+  //   enableTime: true,
+  //   noCalendar: true,
+  //   dateFormat: 'H:i',
+  //   minTime: '08:00',
+  //   maxTime: '19:00',
+  //   disable: bookedTimes.value,
+  //   onChange: (selectedDates) => {
+  //     formData.value.time = selectedDates[0] ? selectedDates[0].toTimeString().split(' ')[0] : ''
+  //   }
+  // })
 
   // Dynamically load Paystack script
   const script = document.createElement('script')
@@ -368,7 +378,7 @@ const isFormValid = computed(() => {
   return (
     formData.value.eventSpace &&
     formData.value.date &&
-    formData.value.time &&
+    // formData.value.time &&
     formData.value.eventType &&
     formData.value.guests &&
     formData.value.email

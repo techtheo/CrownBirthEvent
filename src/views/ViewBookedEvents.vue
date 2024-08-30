@@ -93,6 +93,17 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Success alert for delete -->
+    <v-alert
+      v-if="showDeleteSuccessAlert"
+      type="success"
+      dismissible
+      transition="scale-transition"
+      class="delete-success-alert"
+    >
+      Booking deleted successfully!
+    </v-alert>
   </div>
 </template>
 
@@ -116,6 +127,7 @@ const paystackScriptLoaded = ref(false);
 const db = getFirestore();
 const showConfirmDialog = ref(false);
 let bookingToDelete = ref(null);
+const showDeleteSuccessAlert = ref(false); // State for delete success alert
 
 // Fetch booked events by current authenticated user
 const fetchBookedEvents = () => {
@@ -226,7 +238,8 @@ const deleteBooking = () => {
   if (bookingToDelete.value) {
     deleteDoc(doc(db, 'bookings', bookingToDelete.value))
       .then(() => {
-        alert('Booking deleted successfully.');
+        showDeleteSuccessAlert.value = true; // Show delete success alert
+        setTimeout(() => (showDeleteSuccessAlert.value = false), 3000); // Hide alert after 3 seconds
         showConfirmDialog.value = false;
         bookingToDelete.value = null;
       })
@@ -256,7 +269,7 @@ const formatCurrency = (amount) => {
   return new Intl.NumberFormat('en-NG', {
     style: 'currency',
     currency: 'NGN',
-  }).format(amount || 0); // Ensure to handle undefined or null amounts
+  }).format(amount);
 };
 </script>
 
@@ -264,50 +277,28 @@ const formatCurrency = (amount) => {
 .view-booked-events {
   padding: 20px;
 }
-
 .heading {
-  font-size: 24px;
-  font-weight: bold;
-  text-align: center;
+  font-size: 1.5rem;
   margin-bottom: 20px;
+  color: #3f51b5;
 }
-
 .booked-event-card {
-  margin: 10px;
-  position: relative; /* For positioning the delete icon */
-  transition: transform 0.3s;
+  position: relative;
 }
-
-.booked-event-card:hover {
-  transform: scale(1.02);
-}
-
 .event-img {
-  height: 200px;
+  border-radius: 8px 8px 0 0;
 }
-
-.proceed-button, .print-button {
-  margin-top: 10px;
-  color: white;
+.price {
+  color: #43a047;
   font-weight: bold;
 }
-
-.price {
-  font-size: 16px;
-  color: #4caf50;
+.proceed-button {
+  margin-top: 10px;
+}
+.print-button {
+  margin-top: 10px;
 }
 
-.event-details p {
-  margin: 5px 0;
-}
-
-.spinner {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-/* Delete icon style */
 .delete-icon {
   position: absolute;
   bottom: 60px; /* Position just above the Print Receipt button */
@@ -319,17 +310,19 @@ const formatCurrency = (amount) => {
 .delete-icon:hover {
   color: #d32f2f;
 }
-
-/* Confirmation dialog style */
-.v-dialog {
-  transition: all 0.3s ease;
+.spinner {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
-
-.v-dialog-enter-active, .v-dialog-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.v-dialog-enter, .v-dialog-leave-to {
-  opacity: 0;
+.delete-success-alert {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  max-width: 400px;
+  z-index: 9999;
 }
 </style>
