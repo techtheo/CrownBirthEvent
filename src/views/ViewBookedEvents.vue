@@ -1,181 +1,263 @@
 <template>
-  <div class="events-container">
-    <h1>View Booked Events</h1>
-    <p>See all the events you have booked.</p>
+  <div class="view-booked-events">
+    <h1 class="heading">Your Booked Events</h1>
 
-    <!-- Display booked events -->
-    <div v-if="events.length" class="events-list">
-      <transition-group name="fade" tag="div">
-        <div
-          v-for="event in events"
-          :key="event.id"
-          class="event-card"
-        >
-          <img v-if="event.image" :src="event.image" alt="Event Image" class="event-image" />
-          <h2>{{ event.eventSpaceName }}</h2>
-          <p>Date: {{ event.date }}</p>
-          <p>Time: {{ event.time }}</p>
-          <p>Number of Guests: {{ event.numberOfGuests }}</p>
-          <p>Status: 
-            <span :class="statusClass(event.status)">
-              {{ event.status }}
-            </span>
-          </p>
-          <p>Payment Status: 
-            <span :class="paymentStatusClass(event.paymentStatus)">
-              {{ event.paymentStatus }}
-            </span>
-          </p>
+    <!-- Display a message if there are no booked events -->
+    <v-alert v-if="bookedEvents.length === 0" type="info" dismissible>
+      You have no booked events at the moment.
+    </v-alert>
 
-          <!-- Show 'Proceed to Payment' button if payment status is unpaid -->
-          <button 
-            v-if="event.paymentStatus === 'unpaid' && event.status === 'pending'"
+    <!-- Loop through booked events and display them in cards -->
+    <v-row>
+      <v-col
+        v-for="event in bookedEvents"
+        :key="event.id"
+        cols="12"
+        md="6"
+        lg="4"
+      >
+        <v-card class="booked-event-card">
+          <v-img
+            :src="event.eventSpaceImage || 'default-image.jpg'"
+            class="event-img"
+            height="200"
+            cover
+          ></v-img>
+          <v-card-title>{{ event.eventSpaceName || 'Event Space' }}</v-card-title>
+          <v-card-subtitle class="price">
+            {{ formatCurrency(event.amount || event.eventSpaceAmount) }}
+          </v-card-subtitle>
+          <v-card-text class="event-details">
+            <p><strong>Date:</strong> {{ event.date }}</p>
+            <p><strong>Time:</strong> {{ event.time }}</p>
+            <p><strong>Event Type:</strong> {{ event.eventType }}</p>
+            <p><strong>Guests:</strong> {{ event.guests }}</p>
+            <p><strong>Duration:</strong> {{ event.duration }}</p>
+            <p><strong>Email:</strong> {{ event.email }}</p>
+            <p><strong>Status:</strong> {{ event.status }}</p>
+            <p><strong>Payment Status:</strong> {{ event.paymentStatus }}</p>
+          </v-card-text>
+
+          <!-- Display Proceed to Payment button if payment status is unpaid -->
+          <v-btn
+            v-if="event.paymentStatus === 'unpaid'"
             @click="proceedToPayment(event)"
-            class="payment-button"
+            class="proceed-button"
+            color="primary"
+            block
           >
             Proceed to Payment
-          </button>
+          </v-btn>
 
-          <!-- Delete button -->
+          <!-- Display Print Receipt button if payment status is paid -->
+          <v-btn
+            v-if="event.paymentStatus === 'paid'"
+            @click="printReceipt(event)"
+            class="print-button"
+            color="secondary"
+            block
+          >
+            Print Receipt
+          </v-btn>
+
+          <!-- Delete button positioned above the Print Receipt button -->
           <v-icon
-            v-if="event.status === 'pending'"
-            @click="deleteEvent(event.id)"
+            @click="confirmDelete(event.id)"
             class="delete-icon"
+            color="red"
+            large
           >
             mdi-delete
           </v-icon>
-        </div>
-      </transition-group>
-    </div>
-    <p v-else>Loading...</p>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- Loading spinner -->
+    <v-progress-circular
+      v-if="loading"
+      indeterminate
+      color="primary"
+      class="spinner"
+    ></v-progress-circular>
+
+    <!-- Confirmation dialog -->
+    <v-dialog v-model="showConfirmDialog" max-width="400px">
+      <v-card>
+        <v-card-title class="headline">Confirm Delete</v-card-title>
+        <v-card-text>Are you sure you want to delete this booking?</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn @click="deleteBooking" color="red" text>Yes</v-btn>
+          <v-btn @click="showConfirmDialog = false" color="grey" text>No</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Success alert for delete -->
+    <v-alert
+      v-if="showDeleteSuccessAlert"
+      type="success"
+      dismissible
+      transition="scale-transition"
+      class="delete-success-alert"
+    >
+      Booking deleted successfully!
+    </v-alert>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  onSnapshot,
+  updateDoc,
+  doc,
+  deleteDoc,
+} from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, collection, query, where, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
-import { useRouter } from 'vue-router';
 
-const events = ref([]);
-const auth = getAuth();
-const db = getFirestore();
-const router = useRouter();
+const bookedEvents = ref([]);
+const loading = ref(false);
 const paystackScriptLoaded = ref(false);
+const db = getFirestore();
+const showConfirmDialog = ref(false);
+let bookingToDelete = ref(null);
+const showDeleteSuccessAlert = ref(false); // State for delete success alert
 
-// Fetch the amount to be paid based on the event space ID
-const fetchEventPrice = async (eventSpaceId) => {
-  try {
-    const eventSpacesCollection = collection(db, 'eventSpaces');
-    const eventSpaceDoc = doc(eventSpacesCollection, eventSpaceId);
-    const eventSpaceSnapshot = await getDocs(eventSpaceDoc);
-
-    if (eventSpaceSnapshot.exists()) {
-      return eventSpaceSnapshot.data().price;
-    } else {
-      console.error('Event space not found');
-      return 0;
-    }
-  } catch (error) {
-    console.error('Error fetching event space price:', error);
-    return 0;
-  }
-};
-
-// Fetch booked events from Firestore based on userId
-const fetchBookedEvents = async (uid) => {
-  try {
-    console.log('Fetching booked events for user:', uid); // Debug log
-    const eventsCollection = collection(db, 'bookings');
-    const q = query(eventsCollection, where('userId', '==', uid));
-    const querySnapshot = await getDocs(q);
-
-    if (!querySnapshot.empty) {
-      events.value = await Promise.all(querySnapshot.docs.map(async (doc) => {
-        const eventData = doc.data();
-        const price = await fetchEventPrice(eventData.eventSpaceId);
-        return {
-          id: doc.id,
-          ...eventData,
-          price // Add the price to the event data
-        };
-      }));
-      console.log('Fetched events:', events.value); // Debug log
-    } else {
-      console.log('No events found for this user'); // Debug log
-    }
-  } catch (error) {
-    console.error('Error fetching booked events:', error);
-  }
-};
-
-// Delete an event from Firestore
-const deleteEvent = async (eventId) => {
-  try {
-    await deleteDoc(doc(db, 'bookings', eventId));
-    events.value = events.value.filter(event => event.id !== eventId);
-    console.log('Event deleted:', eventId); // Debug log
-  } catch (error) {
-    console.error('Error deleting event:', error);
-  }
-};
-
-// Proceed to payment for a specific event
-const proceedToPayment = (event) => {
-  if (!paystackScriptLoaded.value) {
-    console.error('Paystack script is not loaded.');
+// Fetch booked events by current authenticated user
+const fetchBookedEvents = () => {
+  loading.value = true;
+  const user = getAuth().currentUser;
+  if (!user) {
+    console.error('User is not authenticated.');
+    loading.value = false;
     return;
   }
 
+  const userId = user.uid;
+
+  // Query to fetch booked events by the current user
+  const bookingsQuery = collection(db, 'bookings');
+  const q = query(bookingsQuery, where('userId', '==', userId));
+
+  // Fetch booked events in real-time
+  onSnapshot(q, (querySnapshot) => {
+    bookedEvents.value = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    loading.value = false;
+  });
+};
+
+// Handle payment process using Paystack
+const proceedToPayment = (event) => {
+  if (!paystackScriptLoaded.value) {
+    alert('Payment gateway is not loaded. Please try again later.');
+    return;
+  }
+
+  // eslint-disable-next-line no-undef
   const handler = PaystackPop.setup({
     key: 'pk_test_1fe63b3c0b80d70970e3b941fe5117d5af23aa23', // Replace with your Paystack public key
     email: event.email,
-    amount: event.price * 100, // Amount in kobo
+    amount: event.amount * 100, // Amount in kobo
     currency: 'NGN',
-    ref: 'CB' + Math.floor(Math.random() * 1000000000 + 1), // Reference should be unique for every transaction
+    ref: 'CB' + Math.floor(Math.random() * 1000000000 + 1), // Unique reference for every transaction
     callback: function (response) {
-      // Payment complete! Record the reference in the backend
-      updatePaymentStatus(event.id, response.reference).then(() => {
-        alert('Payment complete! Reference: ' + response.reference);
-        router.push('/confirmation'); // Navigate to confirmation page
-      }).catch(error => {
-        console.error('Error updating payment status:', error);
-      });
+      // Update the payment status in the Firestore database
+      updatePaymentStatus(event.id, response.reference)
+        .then(() => {
+          alert('Payment complete! Reference: ' + response.reference);
+          printReceipt(event); // Automatically print receipt after successful payment
+        })
+        .catch((error) => {
+          console.error('Error updating payment status:', error);
+        });
     },
     onClose: function () {
       alert('Transaction was not completed, window closed.');
-    }
+    },
   });
   handler.openIframe();
 };
 
 // Update payment status in Firestore
-const updatePaymentStatus = async (eventId, reference) => {
-  try {
-    await updateDoc(doc(db, 'bookings', eventId), {
-      paymentStatus: 'paid',
-      paymentReference: reference
-    });
-  } catch (error) {
-    console.error('Error updating payment status:', error);
+const updatePaymentStatus = (bookingId, reference) => {
+  return updateDoc(doc(db, 'bookings', bookingId), {
+    paymentStatus: 'paid',
+    paymentReference: reference,
+  });
+};
+
+// Print receipt for the event
+const printReceipt = (event) => {
+  const receiptWindow = window.open('', '_blank');
+  receiptWindow.document.write(`
+    <html>
+      <head>
+        <title>Receipt</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { text-align: center; }
+          .receipt-details { margin-top: 20px; }
+          p { margin: 5px 0; }
+        </style>
+      </head>
+      <body>
+        <h1>Receipt for ${event.eventSpaceName || 'Event Space'}</h1>
+        <div class="receipt-details">
+          <p><strong>Date:</strong> ${event.date}</p>
+          <p><strong>Time:</strong> ${event.time}</p>
+          <p><strong>Event Type:</strong> ${event.eventType}</p>
+          <p><strong>Guests:</strong> ${event.guests}</p>
+          <p><strong>Duration:</strong> ${event.duration}</p>
+          <p><strong>Email:</strong> ${event.email}</p>
+          <p><strong>Amount Paid:</strong> ${formatCurrency(event.amount)}</p>
+          <p><strong>Payment Reference:</strong> ${event.paymentReference}</p>
+        </div>
+      </body>
+    </html>
+  `);
+  receiptWindow.document.close();
+  receiptWindow.print();
+};
+
+// Confirm deletion of booking
+const confirmDelete = (bookingId) => {
+  bookingToDelete.value = bookingId;
+  showConfirmDialog.value = true;
+};
+
+// Delete booking from Firestore
+const deleteBooking = () => {
+  if (bookingToDelete.value) {
+    deleteDoc(doc(db, 'bookings', bookingToDelete.value))
+      .then(() => {
+        showDeleteSuccessAlert.value = true; // Show delete success alert
+        setTimeout(() => (showDeleteSuccessAlert.value = false), 3000); // Hide alert after 3 seconds
+        showConfirmDialog.value = false;
+        bookingToDelete.value = null;
+      })
+      .catch((error) => {
+        console.error('Error deleting booking:', error);
+      });
   }
 };
 
-// Fetch booked events when component is mounted
 onMounted(() => {
-  const user = auth.currentUser;
-  console.log('Current user:', user); // Debug log
-  if (user) {
-    fetchBookedEvents(user.uid);
-  } else {
-    console.log('User not authenticated'); // Debug log
-  }
+  fetchBookedEvents();
 
   // Dynamically load Paystack script
   const script = document.createElement('script');
-  script.src = "https://js.paystack.co/v1/inline.js";
+  script.src = 'https://js.paystack.co/v1/inline.js';
   script.async = true;
-  script.onload = () => paystackScriptLoaded.value = true; // Set to true when the script loads
+  script.onload = () => (paystackScriptLoaded.value = true); // Set to true when the script loads
   script.onerror = () => {
     console.error('Failed to load Paystack script.');
     paystackScriptLoaded.value = false;
@@ -183,130 +265,65 @@ onMounted(() => {
   document.body.appendChild(script);
 });
 
-// Return a class based on the event status for styling
-const statusClass = (status) => {
-  switch(status) {
-    case 'confirmed':
-      return 'status-confirmed';
-    case 'pending':
-      return 'status-pending';
-    case 'failed':
-      return 'status-failed';
-    case 'successful':
-      return 'status-successful';
-    default:
-      return '';
-  }
-};
-
-// Return a class based on the payment status for styling
-const paymentStatusClass = (paymentStatus) => {
-  switch(paymentStatus) {
-    case 'paid':
-      return 'payment-status-paid';
-    case 'unpaid':
-      return 'payment-status-unpaid';
-    default:
-      return '';
-  }
+// Format amount as currency
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('en-NG', {
+    style: 'currency',
+    currency: 'NGN',
+  }).format(amount);
 };
 </script>
 
-
 <style scoped>
-.events-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 1rem;
+.view-booked-events {
+  padding: 20px;
 }
-
-.events-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.heading {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: #3f51b5;
 }
-
-.event-card {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+.booked-event-card {
   position: relative;
 }
-
-.event-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+.event-img {
+  border-radius: 8px 8px 0 0;
 }
-
-.event-card h2 {
-  margin: 0 0 0.5rem 0;
+.price {
+  color: #43a047;
+  font-weight: bold;
 }
-
-.event-card p {
-  margin: 0.5rem 0;
+.proceed-button {
+  margin-top: 10px;
 }
-
-.event-image {
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-}
-
-.payment-button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 1rem;
-}
-
-.payment-button:hover {
-  background-color: #0056b3;
+.print-button {
+  margin-top: 10px;
 }
 
 .delete-icon {
   position: absolute;
-  top: 10px;
+  bottom: 60px; /* Position just above the Print Receipt button */
   right: 10px;
   cursor: pointer;
-  color: red;
+  transition: color 0.3s;
 }
 
-.status-confirmed {
-  color: green;
+.delete-icon:hover {
+  color: #d32f2f;
 }
-
-.status-pending {
-  color: orange;
+.spinner {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
-
-.status-failed {
-  color: red;
-}
-
-.status-successful {
-  color: blue;
-}
-
-.payment-status-paid {
-  color: green;
-}
-
-.payment-status-unpaid {
-  color: orange;
-}
-
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.5s;
-}
-
-.fade-enter, .fade-leave-to /* .fade-leave-active in <2.1.8 */ {
-  opacity: 0;
+.delete-success-alert {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  max-width: 400px;
+  z-index: 9999;
 }
 </style>
