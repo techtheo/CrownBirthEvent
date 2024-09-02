@@ -1,5 +1,10 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import HomeView from '../views/HomeView.vue';
+import Login from '../components/auth/Login.vue';
+import SignUp from '../components/auth/SignUp.vue';
+import { getAuth, signOut } from 'firebase/auth'; // Import Firebase auth functions
+
+const auth = getAuth();
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -10,82 +15,65 @@ const router = createRouter({
       component: HomeView
     },
     {
-      path: '/register',
-      name: 'register',
-      // route level code-splitting this generates a separate chunk (About.[hash].js) for this route which is lazy-loaded when the route is visited.
-      component: () => import('../views/RegisterUser.vue')
-    },
-    {
       path: '/login',
-      name: 'login',
-      component: () => import('../views/LoginUser.vue')
+      name: 'Login',
+      component: Login
     },
     {
-      path: '/forgot-password',
-      name: 'forgot-password',
-      component: () => import('../views/ForgotPassword.vue')
+      path: '/signup',
+      name: 'SignUp',
+      component: SignUp
     },
-
-    // admin dashboard
     {
-      path: '/admin/dashboard',
-      name: 'dashboard-admin',
-      component: () => import('../views/admin/DashboardAdmin.vue'),
+      path: '/user-dashboard',
+      component: () => import('../views/UserDashboard.vue'),
       children: [
         {
-          path: 'create-event',
-          name: 'create-events',
-          component: () => import('../views/admin/CreateEvents.vue')
+          path: '', component: () => import('../views/DashBoard.vue'),
         },
+        { path: 'user-profile', component: () => import('../views/UserProfile.vue') },
         {
-          path: 'all-events',
-          name: 'all-events',
-          component: () => import('../views/admin/AllEvents.vue')
+          path: 'book-event', component: () => import('../views/BookEvent.vue'),
+          children: [
+            { path: 'confirmation', name: 'ConfirmationPage', component: () => import('../views/ConfirmationPage.vue') },
+          ]
         },
-        {
-          path: 'overview',
-          name: 'dashboard-overview',
-          // component: () => import('../views/Overview.vue')
-        },
-        {
-          path: 'campaign',
-          name: 'campaign',
-          // component: () => import('../views/AllCampaigns.vue')
-        }
-      ]
+        { path: 'view-booked-events', component: () => import('../views/ViewBookedEvents.vue') },
+        { path: 'notifications', component: () => import('../views/Notifications.vue') }, // Add the Notifications route
+      ],
     },
-
-
-    // user dashboard
     {
-      path: '/dashboard',
-      name: 'dashboard-user',
-      component: () => import('../views/user/DashboardUser.vue'),
+      path: '/admin-dashboard',
+      component: () => import('../views/AdminDashboard.vue'),
       children: [
         {
-          path: 'create-event',
-          name: 'create-event',
-          component: () => import('../views/user/CreateEvent.vue')
-        },
-        {
-          path: 'event-bookings',
-          name: 'list-events',
-          component: () => import('../views/user/ListEvents.vue')
-
-        },
-        {
-          path: 'campaign',
-          name: 'campaign',
-          // component: () => import('../views/AllCampaigns.vue')
-        }
-      ]
+          path: '', component: () => import('../views/Overview.vue'),
+        }, // Default to Overview
+        { path: 'overview', component: () => import('../views/Overview.vue') }, // Overview route
+        { path: 'admin-profile', component: () => import('../views/AdminProfile.vue') },
+        { path: 'manage-events', component: () => import('../views/ManageEvents.vue') },
+        { path: 'view-all-bookings', component: () => import('../views/ViewAllBookings.vue') },
+      ],
     },
     {
-      path: '/events/:id',
-      name: 'EventDetails',
-      component: () => import ('../views/EventDetails.vue')
-    }
+      path: '/confirmation',
+      name: 'ConfirmationPage',
+      component: () => import('../views/ConfirmationPage.vue') // Add the ConfirmationPage route
+    },
+    {
+      path: '/logout',
+      beforeEnter: async (to, from, next) => {
+        try {
+          await signOut(auth); // Firebase sign out
+          console.log('Logged out successfully');
+          next('/login'); // Redirect to login page after logout
+        } catch (error) {
+          console.error('Error during logout:', error.message);
+          next(false); // Prevent navigation if logout fails
+        }
+      },
+    },
   ]
-})
+});
 
-export default router
+export default router;
