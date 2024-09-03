@@ -29,7 +29,7 @@ const router = createRouter({
       component: () => import('../views/UserDashboard.vue'),
       children: [
         {
-          path: '', component: () => import('../views/DashBoard.vue'),
+          path: '', component: () => import('../views/Dashboard.vue'),
         },
         { path: 'user-profile', component: () => import('../views/UserProfile.vue') },
         {
