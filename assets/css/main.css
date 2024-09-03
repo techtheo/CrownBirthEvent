@@ -270,7 +270,9 @@ h6 {
     width:45%;
   }
 }
-
+.header {
+  background-color: #101425;
+}
 .scrolled .header {
   box-shadow: 0px 0 18px rgba(0, 0, 0, 0.1);
 }

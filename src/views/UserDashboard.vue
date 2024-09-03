@@ -2,7 +2,7 @@
 <template>
   <v-layout>
     <!-- App Bar (Header) -->
-    <v-app-bar app color="primary" dark dense>
+    <v-app-bar app color="#101425" dark dense>
       <v-app-bar-nav-icon @click="toggleSidebar" />
       <v-title class="text-white ml-4">CROWNBIRTH</v-title>
       <v-spacer></v-spacer>
@@ -136,7 +136,7 @@ onMounted(() => {
 
 /* Sidebar */
 .v-navigation-drawer {
-  background-color: #34495e;
+  background-color: #101425;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -150,7 +150,7 @@ onMounted(() => {
 }
 
 .v-list-item:hover {
-  background-color: #2c3e50;
+  /* background-color: #2c3e50; */
   transform: translateX(5px);
 }
 
@@ -185,7 +185,7 @@ onMounted(() => {
 
 /* Content Area */
 .v-main {
-  background-color: #ecf0f1;
+  background-color: #dfe1ea;
   padding-top: 80px;
 }
 

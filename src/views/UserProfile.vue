@@ -282,18 +282,24 @@ onMounted(() => {
 
 <style scoped>
 .profile-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
+  padding: 2rem;
+  background-color: #f9f9f9;
+  min-height: 100vh;
 }
 
-.password-hint {
-  font-size: 12px;
-  color: #888;
-  margin-top: -8px;
+.profile-card,
+.password-card {
+  max-width: 100%;
+  margin: 2rem auto;
 }
 
-.v-spinner {
-  margin-right: 8px;
+.v-card-title {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.v-btn {
+  margin-top: 1rem;
+  width: 100%;
 }
 </style>

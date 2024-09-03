@@ -1,5 +1,5 @@
 <template>
-    <v-container>
+    <v-container class="notification-container">
       <h2>Notifications</h2>
       <v-list>
         <!-- Example notifications -->
@@ -26,6 +26,10 @@
   </script>
   
   <style scoped>
-  /* Add any necessary styles here */
+ .notification-container{
+  padding: 2rem;
+  background-color: #2c3e50;
+  min-height: 100vh;
+ }
   </style>
   

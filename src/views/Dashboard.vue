@@ -32,7 +32,7 @@
                   <v-card-text>
                     {{ event.description }}
                     <br />
-                    <strong>Type:</strong> {{ event.type || 'N/A' }} <!-- Event type displayed here -->
+                    <strong>Type:</strong> {{ event.type || 'N/A' }}
                   </v-card-text>
                 </v-card>
               </v-col>
@@ -105,7 +105,7 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import Typed from 'typed.js';
 
 // Refs to store user data and events
@@ -166,11 +166,11 @@ const isBooked = (date) => {
 const fetchData = async (uid) => {
   try {
     // Fetch user data
-    const userQuery = query(collection(db, 'users'), where('uid', '==', uid));
-    const userSnapshot = await getDocs(userQuery);
+    const userRef = doc(db, 'users', uid);
+    const userSnapshot = await getDoc(userRef);
 
-    if (!userSnapshot.empty) {
-      const userData = userSnapshot.docs[0].data();
+    if (userSnapshot.exists()) {
+      const userData = userSnapshot.data();
       userName.value = userData.username;
     }
 
@@ -295,27 +295,13 @@ onMounted(async () => {
 }
 
 .status-pending {
-  border-left: 4px solid #ffb300;
-  background-color: #fffde7;
+  border-left: 4px solid #ff9800;
+  background-color: #fff3e0;
 }
 
 .status-text {
   display: inline-block;
+  margin-left: 10px;
   font-style: italic;
-  margin-left: 0.5rem;
-}
-
-.v-card-title {
-  font-weight: bold;
-  font-size: 1.5rem;
-}
-
-.v-card-subtitle {
-  font-size: 1.2rem;
-}
-
-.v-list-item-subtitle {
-  font-size: 1rem;
-  margin-top: 0.5rem;
 }
 </style>

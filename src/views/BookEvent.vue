@@ -38,7 +38,7 @@
     <!-- Date picker -->
     <div class="form-group">
       <label for="datetimepicker">Select Date:</label>
-      <input id="datetimepicker" type="text" placeholder="Select a date" class="flatpickr-input" />
+      <input id="datetimepicker" type="text" placeholder="Select a date" class="form-control" />
     </div>
 
     <!-- Additional form fields -->
@@ -453,6 +453,7 @@ const printReceipt = () => {
 <style scoped>
 .booking-container {
   padding: 20px;
+  background-color: #ffff;
 }
 
 .event-cards {
@@ -481,6 +482,7 @@ const printReceipt = () => {
   width: 100%;
   padding: 10px;
   margin-top: 5px;
+  /* border: 1px solid black; */
 }
 
 .form-group {

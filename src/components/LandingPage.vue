@@ -42,7 +42,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <header id="header" class="header d-flex align-items-center fixed-top bg-dark">
+  <header id="header" class="header d-flex align-items-center fixed-top">
     <div class="container-fluid container-xl position-relative d-flex align-items-center">
       <router-link to="/" class="logo d-flex align-items-center me-auto">
         <!-- <img src="../../assets/img/logo.png" alt> -->
@@ -56,13 +56,13 @@ onMounted(() => {
         </div>
         <ul :class="{ active: isMenuOpen }">
           <li>
-            <router-link to="/hero" class="active">Home<br /></router-link>
+            <a href="#hero" class="active">Home<br /></a>
           </li>
-          <li><router-link to="/venue">Venue</router-link></li>
-          <!-- <li><router-link to="/gallery">Gallery</router-link></li> -->
-          <li><router-link to="/about">About Us</router-link></li>
-          <li><router-link to="/booking">Booking</router-link></li>
-          <li><router-link to="/contact">Contact</router-link></li>
+          <li><a href="#venue">Venue</a></li>
+          <!-- <li><a href="/gallery">Gallery</a></li> -->
+          <li><a href="#about">About Us</a></li>
+          <li><a href="#booking">Booking</a></li>
+          <li><a href="#contact">Contact</a></li>
           <li><router-link class="cta-btn" to="/signup">Login/Register</router-link></li>
         </ul>
         <!-- <i class="mobile-nav-close bi bi-x" @click="toggleMenu"></i> -->
@@ -684,9 +684,11 @@ onMounted(() => {
       </div>
     </div>
   </footer>
-  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"
-    ><i class="bi bi-arrow-up-short"></i
-  ></a>
+  <div>
+    <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"
+      ><i class="bi bi-arrow-up-short"></i
+    ></a>
+  </div>
 
   <!-- Preloader -->
   <!-- <div id="preloader"></div> -->
