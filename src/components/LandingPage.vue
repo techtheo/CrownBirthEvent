@@ -77,7 +77,7 @@ onMounted(() => {
   <main class="main">
     <!-- Hero Section -->
     <section id="hero" class="hero section dark-background">
-      <img src="../../assets/img/hero-bg.jpg" alt="hero" data-aos="fade-in" />
+      <img src="https://lh3.googleusercontent.com/p/AF1QipNcFJfazcdLPsM3Qs43caMQt3MU0xBBK07CLkcf=s1360-w1360-h1020" alt="hero" data-aos="fade-in" />
 
       <div class="container d-flex flex-column align-items-center text-center mt-auto">
         <h2 data-aos="fade-up" data-aos-delay="100" class="">
@@ -87,7 +87,7 @@ onMounted(() => {
         <div data-aos="fade-up" data-aos-delay="300" class="">
           <a
             href="https://lh3.googleusercontent.com/ggs/AF1QipMzms_CJCbewDac719QTBomdJ7KkpDSMMXad1GO=m18"
-            class="glightbox pulsating-play-btn mt-3"
+            class="glightbox pulsating-play-btn mt-3" target="_blank"
           ></a>
         </div>
       </div>

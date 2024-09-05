@@ -4,7 +4,7 @@ import Login from '../components/auth/Login.vue';
 import SignUp from '../components/auth/SignUp.vue';
 import { getAuth, signOut } from 'firebase/auth'; // Import Firebase auth functions
 
-const auth = getAuth();
+const auth = getAuth();   // initializes Firebase Authentication by creating an auth instance that will be used to manage authentication status and log the user out.
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -77,3 +77,13 @@ const router = createRouter({
 });
 
 export default router;
+
+
+
+// SUMMARY // 
+
+// Summary:
+// The code sets up a structured and dynamic routing system for a Vue.js app.
+// It protects certain routes like /user-dashboard and /admin-dashboard, ensuring they have their own child routes for better user experience.
+// Firebase Authentication is integrated for handling user logout securely via the /logout route.
+// The use of lazy-loaded components optimizes the performance of the application by loading only the necessary parts of the application when required.

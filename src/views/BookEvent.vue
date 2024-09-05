@@ -181,14 +181,19 @@ const fetchEventSpaces = async () => {
 
 const updateDatePicker = () => {
   flatpickr('#datetimepicker', {
-    dateFormat: 'Y-m-d',
-    minDate: 'today',
-    disable: bookedDates.value.map((date) => new Date(date)),
-    onChange: (selectedDates) => {
-      formData.value.date = selectedDates[0] ? selectedDates[0].toISOString().split('T')[0] : ''
-      fetchBookedDatesAndTimes() // Refresh booked dates after selecting a date
-    }
-  })
+  dateFormat: 'Y-m-d',
+  minDate: 'today',
+  disable: bookedDates.value.map((date) => new Date(date)),
+  onChange: (selectedDates) => {
+    // Convert selected date to the correct format before saving
+    formData.value.date = selectedDates[0] 
+      ? new Date(selectedDates[0].getTime() - selectedDates[0].getTimezoneOffset() * 60000)
+          .toISOString()
+          .split('T')[0] 
+      : ''
+    fetchBookedDatesAndTimes() // Refresh booked dates after selecting a date
+  }
+})
 }
 
 const fetchBookedDatesAndTimes = () => {
