@@ -173,7 +173,7 @@ const fetchEventSpaces = async () => {
   try {
     const spacesQuery = collection(db, 'event_spaces')
     const querySnapshot = await getDocs(spacesQuery)
-    eventSpaces.value = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+    eventSpaces.value = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))  // ... (Spread Operator)
   } catch (error) {
     console.error('Error fetching data:', error)
   }
@@ -290,6 +290,8 @@ const bookEvent = async () => {
     loading.value = false
   }
 }
+
+//
 
 const resetFormData = () => {
   formData.value.eventSpace = ''

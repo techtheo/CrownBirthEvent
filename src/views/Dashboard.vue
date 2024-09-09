@@ -24,19 +24,20 @@
             <v-typography variant="h2">Upcoming Events</v-typography>
           </v-card-title>
           <v-card-text>
-            <v-row>
-              <v-col v-for="event in upcomingEvents" :key="event.id" cols="12" sm="6" md="4">
-                <v-card class="event-card" raised>
-                  <v-card-title>{{ event.title }}</v-card-title>
-                  <v-card-subtitle>{{ formatDate(event.date) }}</v-card-subtitle>
-                  <v-card-text>
-                    {{ event.description }}
-                    <br />
-                    <strong>Type:</strong> {{ event.type || 'N/A' }}
-                  </v-card-text>
-                </v-card>
-              </v-col>
-            </v-row>
+            <v-data-table
+              :headers="eventHeaders"
+              :items="upcomingEvents"
+              item-key="id"
+              :items-per-page="3"
+              class="events-table"
+            >
+              <template v-slot:item.date="{ item }">
+                {{ formatDate(item.date) }}
+              </template>
+              <template v-slot:item.type="{ item }">
+                {{ item.type || 'N/A' }}
+              </template>
+            </v-data-table>
           </v-card-text>
         </v-card>
       </v-col>
@@ -117,6 +118,14 @@ const bookedDates = ref([]);
 // Firebase setup
 const auth = getAuth();
 const db = getFirestore();
+
+// Event table headers
+const eventHeaders = [
+  { text: 'Title', value: 'title' },
+  { text: 'Date', value: 'date' },
+  { text: 'Description', value: 'description' },
+  { text: 'Type', value: 'type' }
+];
 
 // Function to format dates
 const formatDate = (date, format = 'long') => {
@@ -254,6 +263,24 @@ onMounted(async () => {
   margin-bottom: 2rem;
 }
 
+.events-table .v-data-table-header th {
+  background-color: #3f51b5;
+  color: white;
+  font-weight: bold;
+}
+
+.events-table .v-data-table__wrapper {
+  background-color: #ffffff;
+}
+
+.events-table .v-data-table__wrapper tbody tr:nth-child(even) {
+  background-color: #f1f1f1;
+}
+
+.events-table .v-data-table__wrapper tbody tr:hover {
+  background-color: #e0e0e0;
+}
+
 .event-card {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -287,21 +314,23 @@ onMounted(async () => {
 .status-approved {
   border-left: 4px solid #4caf50;
   background-color: #e8f5e9;
+  padding-left: 1rem;
 }
 
 .status-rejected {
   border-left: 4px solid #f44336;
   background-color: #ffebee;
+  padding-left: 1rem;
 }
 
 .status-pending {
   border-left: 4px solid #ff9800;
   background-color: #fff3e0;
+  padding-left: 1rem;
 }
 
 .status-text {
   display: inline-block;
-  margin-left: 10px;
-  font-style: italic;
+  margin-left: 0.5rem;
 }
 </style>

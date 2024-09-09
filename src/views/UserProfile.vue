@@ -16,18 +16,6 @@
           <v-form @submit.prevent="reauthenticateAndUpdateProfile">
             <v-text-field v-model="user.username" label="Username" outlined />
             <v-text-field v-model="user.email" label="Email" type="email" outlined />
-            <v-text-field
-              v-model="confirmCurrentPassword"
-              :type="showPassword.confirmCurrent ? 'text' : 'password'"
-              label="Confirm Current Password"
-              outlined
-            >
-              <template v-slot:append>
-                <v-icon @click="togglePasswordVisibility('confirmCurrent')">
-                  {{ showPassword.confirmCurrent ? 'mdi-eye-off' : 'mdi-eye' }}
-                </v-icon>
-              </template>
-            </v-text-field>
             <v-btn type="submit" :disabled="loading || !isProfileValid" color="primary" class="mt-4">
               <v-spinner v-if="loading && !passwordUpdating" size="24" color="white" />
               Update Profile
@@ -116,7 +104,6 @@ const user = ref({
 const currentPassword = ref('');
 const newPassword = ref('');
 const confirmPassword = ref('');
-const confirmCurrentPassword = ref(''); // For confirming current password during profile update
 const auth = getAuth();
 const db = getFirestore();
 const loading = ref(false);
@@ -127,14 +114,13 @@ const initialUser = ref({ username: '', email: '' }); // Store initial user data
 const showPassword = ref({
   current: false,
   new: false,
-  confirm: false,
-  confirmCurrent: false
+  confirm: false
 }); // Control password visibility
 
 // Add isPasswordDirty to track changes in password fields
 const isPasswordDirty = ref(false);
 
-const isProfileValid = computed(() => user.value.username && user.value.email && confirmCurrentPassword.value);
+const isProfileValid = computed(() => user.value.username && user.value.email);
 
 // New function to validate password change and update isPasswordDirty
 const validatePasswordChange = () => {
@@ -186,7 +172,7 @@ const reauthenticateAndUpdateProfile = async () => {
     // Re-authenticate the user
     const credential = EmailAuthProvider.credential(
       auth.currentUser.email,
-      confirmCurrentPassword.value
+      currentPassword.value // Use the current password for reauthentication
     );
     await reauthenticateWithCredential(auth.currentUser, credential);
 

@@ -60,6 +60,7 @@ const router = createRouter({
       name: 'ConfirmationPage',
       component: () => import('../views/ConfirmationPage.vue') // Add the ConfirmationPage route
     },
+
     {
       path: '/logout',
       beforeEnter: async (to, from, next) => {
@@ -73,6 +74,11 @@ const router = createRouter({
         }
       },
     },
+
+    // Summary: for the last path
+// The route handler for /logout logs out the user by calling Firebase's signOut method.
+// On successful logout, the user is redirected to the /login page.
+// If an error occurs during logout, an error message is logged, and navigation is prevented
   ]
 });
 
